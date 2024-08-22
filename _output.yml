@@ -1,0 +1,23 @@
+bookdown::gitbook:
+  css: style.css
+#  split_by: "chapter+number"
+  config:
+    toc:
+      collapse: section
+      scroll_highlight: true
+    view: https://github.com/dereksonderegger/444/raw/master/%s
+    edit: https://github.com/dereksonderegger/444/blob/master/%s
+    search: yes
+    fontsettings:
+      theme: white
+      family: sans
+      size: 2
+    sharing:
+      facebook: no
+      twitter: no
+      google: no
+      weibo: no
+      instapper: no
+      vk: no
+      all: ['facebook', 'google', 'twitter', 'weibo', 'instapaper']      
+

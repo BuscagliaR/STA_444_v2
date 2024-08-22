@@ -1,0 +1,10 @@
+# All the R project stuff
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rprofile
+
+# Don't save html files or cache
+_book
+_bookdown_files

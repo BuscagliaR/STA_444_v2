@@ -1,0 +1,6 @@
+book_filename: "444"
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Chapter "
+bibliography: book.bib
