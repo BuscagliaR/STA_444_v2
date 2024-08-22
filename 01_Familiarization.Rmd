@@ -25,6 +25,10 @@ The basic editor that comes with R works fairly well, but but it is *strongly* r
 
 R is a script based language, and there isn't a point-and-click interface for data wrangling and statistical modeling. While initially painful, writing scripts leaves a clear and reproducible description of exactly what steps were performed. This is a critical aspect of sharing your methods and results with other students, colleagues, and the world at-large.
 
+## A Basic Script
+
+The simplest form for developing and executing code is a script file. A script file can be loaded within R studio by selecting `File -> New File -> R Script`. It is encouraged to develop and run code within a script file first, beforing placing code into an RMD file.  A script file only executes R code, such as that of an R-chunk discussed below. However, the script file does not compile any of the other items an Rmarkdown file will use, and thus is a safe and easy way to check if your statistical code is working. If you are getting errors when compiling an Rmarkdown file, ensure that all of your statistical code is properly working first by executing within a basic script file. This can help you decide if the error is coming from RMD (latex, etc...) or if you have a flaw in your solution.
+
 ## Working within an Rmarkdown File
 
 The first step in any new analysis or project is to create a new Rmarkdown file. 

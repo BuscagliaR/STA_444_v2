@@ -1,0 +1,67 @@
+# (PART\*) Additional Information  {-}
+# Personal Computer - R and RMD {-}
+
+This section was last updated on 08/22/2024 by RB.
+
+## Installing R {-}
+
+R can be downloaded free online at https://www.r-project.org/. Navigate to Downloads via CRAN, and choose a mirror. Select the 'base' installation for your operating system. I will be working with the latest version `4.4.1` during the semester.  It is strongly recommended that all students take STA 444, which gives a very useful introduction to using the R language.
+
+## RStudio {-}
+
+RStudio gives an easy to work with interface for writing R scripts and preparing RMD files.  RStudio is free for download at https://www.rstudio.com/products/rstudio/download/. I will be using RStudio version `2024.04.2+764 "Chocolate Cosmos"`.
+
+## RMarkdown {-}
+
+One important goal this semester will be to help translate what we learn in lectures to applications in your field of study.  One excellent solution for keeping documents that need both writing and scripting to flow nicely is known as markdown.  Through RStudio, we can install the package **rmarkdown**, which I will frequently refer to as RMD.  This document, along with nearly all content that I will provide, will be produced through RMD.
+
+RMD will be an excellent way for you to share your solutions with me electronically. For STA 444/445, it is required for all assignment preparation and submissions as PDF (outside of some special topics). Depending on the depth to which you learn RMD, you can also blend in the use of the latex language to make complete stand-alone documents. With a little practice, you can produce documents with text, code, figures, and tables with amazing organization. There are also shortcuts for leaving space within a document, so that pencil can be used to work out calculations.  Remember, you can always double check any solutions this semester with the use of R!
+
+Start by installing **rmarkdown** package.  You may get some minor warnings, but you will not need `Rtools` to compile PDFs.
+
+```{r, echo=TRUE, eval=FALSE}
+install.packages("rmarkdown")
+```
+
+As a note of caution, packages should never be installed within an RMD file.  **Once a package is installed, it can be used continually without installation on that terminal.** Thus, it is often best to install packages through script or the console window.
+
+\newpage
+
+## tinytex {-}
+
+*If you have a latex distribution on your computer, you can skip the Latex instructions below.  However, tinytex is one of the most reliable latex distributions for compiling PDF documents using Rmarkdown.*
+
+You must have a version of latex to produce high quality PDF files. The good news, there is an easy to implement solution directly through R. The package **tinytex** gives you both a fully operational latex developer and automatically updates required files so that you can generate PDFs with ease.
+
+You will want to start install **tinytex** before trying to knit any RMD files.
+
+```{r, echo=TRUE, eval=FALSE}
+install.packages("tinytex")
+```
+
+The packages should install rather quickly, as it is just an interface to an online latex downloader.  Once the package installation is complete, you must install 'tinytex' through the following R command.
+
+```{r, echo=TRUE, eval=FALSE}
+tinytex::install_tinytex()
+```
+
+The install can be long but they have improved the installation process dramatically over the years. The author has made it such that the most up-to-date latex distributions are automatically downloaded and installed.  There were previously a few errors along the way to installation. Recently I have not experienced any pop-up window errors. If you notice any keep clicking 'OK' and being patient with the downloads.  However, my most recent install of `tinytex` took only seconds to finish.  When your console returns to normal and installation is complete, be sure to restart RStudio.  You can then double check the installation was successful with the command
+
+```{r, echo=TRUE}
+tinytex:::is_tinytex()
+```
+
+You can see that the output on the computer being used to generate this document returns 'TRUE'.  This means you are ready to produce your first PDF file through RMD.
+
+## First RMD File {-}
+
+Everything should be prepared to knit your first RMD file to PDF.  The task here is to ensure it will knit the basic document.  Select from the RStudio interface File > New File > R Markdown..., this will bring up the interface shown below in Figure 1.  Fill in the information as required and be sure to select PDF as the Default output format.
+
+A new page will appear that is the .RMD file.  Before anything can be knit, the file must be saved (File > Save As...).  Where the file is saved is the "working directory" that will be used for the PDF creation.  Be sure to be aware of the location you save the file.  Once saved, select "knit" from the top of the screen.  If everything from above has been done correctly, you should knit for you first PDF file!
+
+With the new installation of `tinytex` that is much faster, it is likely that your first `knit` will require a few downloads from the Latex server.  If you have done everything correctly, just be patient (you can watch progress in the `RMarkdown` terminal window) and a PDF should be produced.  My first `knit` took about 60 seconds and installed three files needed to properly knit the document.
+
+I will provide more code and RMD information as the semester continues.
+
+![New RMD Creation Interface](images\New_RMD.png)
+
