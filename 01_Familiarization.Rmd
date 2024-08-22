@@ -1,4 +1,4 @@
-# (PART\*) Introduction {-}
+# (PART\*) STA 444 {-}
 # Familiarization
 
 ```{r, echo=FALSE}
@@ -15,27 +15,15 @@ if( length(pkgs > 0)){
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
-As always, there is a 
-[Video Lecture](https://youtu.be/7_kK4QdoA4k) 
-that accompanies this chapter.
+Throughout this textbook, we will include links to a variety of video lectuers developed by the original author Dr. Derek Sonderegger. The video lectures add useful additional details to the content of this textbook. At this time, the video lectures have not been updated but may be changed in future updates.
 
-R is a open-source program that is commonly used in statistics and machine learning. 
-It runs on almost every platform and is completely free and is available at 
-[www.r-project.org](www.r-project.org). Most cutting-edge statistical research 
-is first available on R. 
+The video lecture for this chapter can be found here: [Video Lecture](https://youtu.be/7_kK4QdoA4k) 
 
-The basic editor that comes with R works fairly well, but but it is *strongly* 
-recommended that you run R through the program RStudio which is available at 
-[rstudio.com](http://www.rstudio.org). 
-This is a completely free Integrated Development Environment that works on Macs, 
-Windows and a couple of flavors of Linux. It simplifies a bunch of more annoying 
-aspects of the standard R GUI and supports useful things like tab completion.
+R is a open-source program that is commonly used in statistics and machine learning. It runs on almost every platform and is completely free and is available at [www.r-project.org](www.r-project.org). Most cutting-edge statistical research is first available on R. 
 
-R is a script based language, and there isn't a point-and-click interface for 
-data wrangling and statistical modeling. While initially painful, writing scripts 
-leaves a clear and reproducible description of exactly what steps were performed. 
-This is a critical aspect of sharing your methods and results with other students, 
-colleagues, and the world at-large.
+The basic editor that comes with R works fairly well, but but it is *strongly* recommended that you run R through the program RStudio which is available at [rstudio.com](http://www.rstudio.org). This is a completely free Integrated Development Environment that works on Macs, Windows and a couple of flavors of Linux. It simplifies a bunch of more annoying aspects of the standard R GUI and supports useful things like tab completion.
+
+R is a script based language, and there isn't a point-and-click interface for data wrangling and statistical modeling. While initially painful, writing scripts leaves a clear and reproducible description of exactly what steps were performed. This is a critical aspect of sharing your methods and results with other students, colleagues, and the world at-large.
 
 ## Working within an Rmarkdown File
 

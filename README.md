@@ -1,17 +1,10 @@
 # Introduction to Data Science with R
 
-This is the Git Repository for the source code and materials for a book that
-is used to teach R and data science. I host the "pretty" version of the book
-at [https://bookdown.org/dereksonderegger/Introduction_to_DataScience_with_R/](https://bookdown.org/dereksonderegger/Introduction_to_DataScience_with_R/).
+This is a Git Repository for the updated book used to teach STA 444/445 at Northern Arizona University. The book is hosted [https://bookdown.org/rb76/444/](https://bookdown.org/rb76/444/).
 
-These notes began before Hadley Wickham had created his R for data science book 
-but there is quite a lot of similarity. The largest distinction is that these notes 
-try to give a gentle first introduction
-to various topics (chapters 1-7) which students progress through in the first 5 
-weeks of a semester. At that point students have had enough R to get through an
-introductory statistics course. The "deeper details" section gets into more
-complicated issues that I think students need to be exposed to.
+This is the second edition of this textbook being updated with new content and material.  The original version is credited to Dr. Derek Sonderegger, and can be found at [https://bookdown.org/dereksonderegger/Introduction_to_DataScience_with_R/](https://bookdown.org/dereksonderegger/Introduction_to_DataScience_with_R/)
 
-There are still uncountable numbers of grammatical mistakes and mispellings and
-I am always happy to have pull requests to fix those.
+These notes began before Hadley Wickham had created his R for data science book but there is quite a lot of similarity. The largest distinction is that these notes try to give a gentle first introduction to various topics (chapters 1-7) which students progress through in the first 5 weeks of a semester (STA 444). At that point students have had enough R to get through an introductory statistics course. The "STA 445" section gets into more complicated issues that I think students need to be exposed to.
+
+As I continue to update this textbook, I am pleased to be given any information on typos, errors, broken links, or outdated packages. Please contact me at robert.buscaglia@nau.edu with any information regarding updates you would like to see to the textbook.
 

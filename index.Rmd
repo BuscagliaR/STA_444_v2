@@ -9,62 +9,42 @@ documentclass: book
 bibliography: [book.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
-github-repo: dereksonderegger/444
+github-repo: BuscagliaR/STA_444_v2
 cover-image: "images/Cover1.png"
 description: ""
 ---
 
 # Preface {-}
-This book is intended to provide students with a resource for learning R while 
-using it during an introductory statistics course. The *Introduction* section 
-covers common issues that students in a typical statistics course will encounter 
-and provides a simple examples and does not attempt to be exhaustive. The 
-*Deeper Details* section addresses issues that commonly arise in many data 
-wrangling situations and is intended to give students a deep enough understanding 
-of R that they will be able to use it as their primary computing resource to 
-manipulate, graph and model data.
+
+This book is intended for use during the STA 444/445 courses at Northern Arizona University. The book is broken into two sections based on the related course material. The *STA 444* section covers basic introductory content for getting started with statistical programming in R.  This course is intended for students of all backgrounds and pairs importantly with courses such as STA 570 (Statistical Methods I) and STA 471 (Regression Analysis). The first section covers details to allow students to work on basic statistical programming while developing simple PDF documents using R-Markdown.  This can both improve the students ability to digest complex statistical topics while also providing them a method for distributing their work in high-quality PDF formats.
+
+The second section entitled *STA 445* dives deeper into issues that commonly arise in many data wrangling situations. The section is intended for more advanced students over the secondary 10-week period as a follow-up to STA 444. The chapters within cover a variety of more complex details related to Data Scene and Statistical Methodology. The intention of STA 445 is to support the BS Data Science program at Northern Arizona University, but provides a tangible enough workload to be applicable to many students looking to advanced their Data Science knowledge within R.
 
 
 ## Other Resources{-}
-There are a great number of very good online and physical resources for learning 
-R. Hadley Wickham is the creator of many of the foundational packages we'll use 
-in this course and he has worked on a number of wonderful teaching resources:
+There are a great number of very good online and physical resources for learning R. Hadley Wickham is the creator of many of the foundational packages we'll use in this course and he has worked on a number of wonderful teaching resources:
 
-* Hadley Wickham and Garrett Grolemund's free online book 
-[R for Data Science](https://r4ds.had.co.nz). 
-This is a wonderful introduction to the `tidyverse` and is free.  If there is 
-any book I'd recommend buying, this would be it. Many of the topics my book covers 
-are perhaps better covered in Hadley and Garrett's book. For people brand new to 
-R, _R for Data Science_ probably has the wrong presentation order. I love it as 
-a reference, though.
+* Hadley Wickham and Garrett Grolemund's free online book [R for Data Science](https://r4ds.had.co.nz). 
+This is a wonderful introduction to the `tidyverse` and is free.  If there is any book I'd recommend buying, this would be it. Many of the topics my book covers are perhaps better covered in Hadley and Garrett's book. For people brand new to R, _R for Data Science_ probably has the wrong presentation order.
 
-* Hadley Wickham and Jenny Bryan have a whole book on 
-[R packages](https://r-pkgs.org) to effectively manage large projects.
+* Hadley Wickham and Jenny Bryan have a whole book on [R packages](https://r-pkgs.org) to effectively manage large projects.
 
-* Finally Hadley Wickham also has a book about 
-[Advanced R programming](https://adv-r.hadley.nz) and is quite helpful in 
-understanding deeper issues relating to Object Oriented programming in R, 
-Environments, Namespaces, and function evaluation.
+* Finally Hadley Wickham also has a book about [Advanced R programming](https://adv-r.hadley.nz) and is quite helpful in understanding deeper issues relating to Object Oriented programming in R, Environments, Namespaces, and function evaluation.
 
 There are a number of other resources out there that quite good as well:
 
-* Michael Freeman's book 
-[Programming Skills for Data Science](https://www.amazon.com/Programming-Skills-Data-Science-Addison-Wesley/dp/0135133106). 
+* Michael Freeman's book [Programming Skills for Data Science](https://www.amazon.com/Programming-Skills-Data-Science-Addison-Wesley/dp/0135133106). 
 This book covers much of what we'll do in this class and is quite readable.
 
-* Roger Peng also has an online book 
-[R programming for Data Science](https://bookdown.org/rdpeng/rprogdatascience/) 
+* Roger Peng also has an online book [R programming for Data Science](https://bookdown.org/rdpeng/rprogdatascience/) 
 introducing R.
 
 ## Source and Error Reports {-}
 The source documents for this book live on GitHub at
-[https://github.com/dereksonderegger/444/](https://github.com/dereksonderegger/444/).
-There you can can make bug reports or clone the GitHub repository, and submit
-fixes via pull requests. I welcome feedback and suggestions for improvement.
-
+[https://github.com/BuscagliaR/STA_444_v2/](https://github.com/BuscagliaR/STA_444_v2/).
+There you can can make bug reports or clone the GitHub repository, and submit fixes via pull requests. I welcome feedback and suggestions for improvement. The most likely way to get fixes introduced quickly is to email me directly at robert.buscaglia@nau.edu.
 
 ## Acknowledgments {-}
-I am grateful for the emotional and co-parenting support of my wife Aubrey, and 
-without whom this book would not be possible. 
+A very large thanks to Dr. Derek Sonderegger for developing the first version of this textbook that has been widely used within the Department of Mathematics and Statistics at Northern Arizona University. I hope to continue to expand upon this easy-to-use and informative textbook that is an excellent first source for many undergraduate and graduate students interested in furthering their Statistical and Data Science skills.
 
 
