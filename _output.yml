@@ -5,8 +5,8 @@ bookdown::gitbook:
     toc:
       collapse: section
       scroll_highlight: true
-    view: https://github.com/dereksonderegger/444/raw/master/%s
-    edit: https://github.com/dereksonderegger/444/blob/master/%s
+    view: https://github.com/BuscagliaR/STA_444_v2/raw/main/%s
+    edit: https://github.com/BuscagliaR/STA_444_v2/blob/main/%s
     search: yes
     fontsettings:
       theme: white
