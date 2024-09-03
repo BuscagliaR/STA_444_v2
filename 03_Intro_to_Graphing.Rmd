@@ -14,8 +14,10 @@ if( length(pkgs > 0)){
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
+In this chapter you will learn more about the `ggplot2` package, part of the `tidyverse` suite of packages.
+
 ```{r, eval=FALSE}
-libary(tidyverse)
+library(ggplot2)
 ```
 
 ```{r, message=FALSE, warning=FALSE, results='hide', include=FALSE}
@@ -24,7 +26,7 @@ suppressPackageStartupMessages({
 })
 ```
 
-Dr. Sonderegger's Video Companion for this Chapter: [Video Lecture](https://youtu.be/eJT9EdiWlEg).
+Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/eJT9EdiWlEg).
 
 ## Introduction to ggplot2 graphics
 
@@ -96,7 +98,7 @@ ggplot( data=iris, aes(x=Sepal.Length, y=Petal.Length) ) +
 3. The relationship we want to explore is `x=Sepal.Length` and `y=Petal.Length`. This means the x-axis will be the Sepal Length and the y-axis will be the Petal Length. To use data directly from the initial data frame, we must always include this mapping within the `aes()` command.
 4. The way we want to display this relationship is through graphing 1 point for every observation (scatter). Thus  we map this information into the scatter graph geometry known as `geom_point()`.
 
-We can define other attributes that might reflect other aspects of the data. For example, we might want for the color of the data point to change dynamically based on the species of iris. We can update our graph by including a second aesthetic (`aes()`) within the `geom_point()` specifically. Below we add a color option based on the species of iris. Notice below that by coloring the graph by species, we gain significant new information regarding how differenes between the iris species.
+We can define other attributes that might reflect other aspects of the data. For example, we might want for the color of the data point to change dynamically based on the species of iris. We can update our graph by including a second aesthetic (`aes()`) within the `geom_point()` specifically. Below we add a color option based on the species of iris. Notice below that by coloring the graph by species, we gain significant new information regarding how differences between the iris species.
 
 ```{r, fig.height=3}
 ggplot( data=iris, aes(x=Sepal.Length, y=Petal.Length) ) +  
@@ -187,7 +189,7 @@ ggplot(tips, aes(x = total_bill, y = tip / total_bill )) +
 
 ### Axis Labels and Titles
 
-To make a graph more understandable, it is necessary to tweak the axis labels and add a main title and such. Lets return to the iris data set example, but improve the quality of our scatter graph. The code below introduces lots of new syntax that changes the written text in many areas of the graph. You could either call the `labs()` command repeatedly with each label, or you could provide multiple arguments to just one `labs()` call.  For readability, the lines have been seperated in the code below.
+To make a graph more understandable, it is necessary to tweak the axis labels and add a main title and such. Lets return to the iris data set example, but improve the quality of our scatter graph. The code below introduces lots of new syntax that changes the written text in many areas of the graph. You could either call the `labs()` command repeatedly with each label, or you could provide multiple arguments to just one `labs()` call.  For readability, the lines have been separated in the code below.
 
 ```{r, fig.height=3}
 # Assign the graph to the object 'p' allowing us to add more later.
