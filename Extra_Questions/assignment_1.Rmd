@@ -1,0 +1,45 @@
+---
+title: "Assignment 1"
+author: "Your NAME HERE"
+date: '2024-01-12'
+output: pdf_document
+---
+
+## Assignment Format
+It is very important that you are able to make professional and easy to follow 
+documents in Markdown. 
+
+* Change the name and date on the document.
+* Number each problem in a section heading.
+* Paste the problem in it's entirety. 
+* Create a R code chunk answering the question.
+* Write a summary explaining your answer when appropriate.
+
+
+## Problems
+
+1. Calculate the value of ln(100), that is base e. 
+2. Calculate the value of log(100) where we are using log base 10. 
+3. Compute $57\times 19 - 85$.
+4. Calculate the value of sin($\pi$).  Comment on the value that R 
+returns.  What should the value be?  Why doesn't R give the correct value?
+5.  Calculate the value of $\sqrt{82}$ and store it as an object 
+named bob.  Have R printout the value of bob. 
+6.  Create a vector of the values 5, 19, 10, 8.  Store the vector as 
+an object named x.  Add 7 to all the values of x and show the output.
+7. Install the package Lock5Data and load the package using the library
+function.  Suppress all warning and startup messages.
+8. Load the dataset April14Temps1e using the data command.
+9. Print out the first few rows of the dataset using the head function.
+10. Summarize the dataset using the summary function.
+
+## Submitting your work
+
+* Knit the document as a pdf file.
+* Check to make sure everything is neat and readable.
+* Does text fall off the page?
+* Is the required output being shown?
+* Will the submission be easy to grade?
+* Save the document as a pdf titled name_assign1.pdf
+* Submit the pdf on canvas.
+

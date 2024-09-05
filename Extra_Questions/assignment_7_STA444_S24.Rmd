@@ -1,0 +1,110 @@
+---
+title: "Assignment 7"
+author: "Dr. Luedeker"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+## Directions:
+Could it be the last assignment of this mini-semester?  That depends on you.  By completing this assignment early, you may unlock a hidden eighth assignment.  This assignment covers chapter 5.  Please show all work in this document and knit your final draft into a pdf.  This is assignment is about statistical models, which will be helpful if you plan on taking STA 570, STA 371, or STA 571. \color{blue} Note:  I have just discovered a good way of changing the text color.
+
+## \color{black} Problem 1: Two Sample t-test
+
+\color{black} Load the iris dataset.  
+
+a. Create a subset of the data that just has information for the two species setosa and versicolor using filter.  Use tail to print out the last few rows.
+
+b. Create a box plot of the petal lengths for these two species using ggplot. Does it look like the mean petal length varies by species?
+
+c. Do a two sample t-test using t.test to determine formally if the petal lengths differ. Note:  The book uses the tidy function in the broom package to make the output nice to look at.  I hate it!  Please don't use tidy.
+
+d. What is the p-value for the test? What do you conclude?
+ 
+e. Give a 95% confidence interval for the difference in the mean petal lengths.  
+
+f. Give a 99% confidence interval for the difference in mean petal lengths.  (Hint: type ?t.test.  See that you can change the confidence level using the option conf.level)
+
+g. What is the mean petal length for setosa?
+ 
+h. What is the mean petal length for versicolor?
+ 
+
+## Problem 2: ANOVA 
+
+Use the iris data with all three species.
+
+a. Create a box plot of the petal lengths for all three species using ggplot.Does it look like there are differences in the mean petal lengths?
+
+b. Create a linear model where sepal length is modeled by species. Give it
+an appropriate name.
+
+c. Type anova(your model name) in a code chunk.
+
+d. What is the p-value for the test?  What do you conclude.
+
+e. Type summary(your model name) in a code chunk.
+
+f. What is the mean petal length for the species setosa?
+
+g. What is the mean petal length for th species versicolor?
+
+
+## Problem 3: Regression 
+
+Can we describe the relationship between petal length and petal width?
+
+a. Create a scatterplot with petal length on the y-axis and petal width on the x-axis using ggplot.
+
+b. Create a linear model to model petal length with petal width (length is the response variable and width is the explanatory variable) using lm.
+
+c. What is the estimate of the slope parameter?
+
+d. What is the estimate of the intercept parameter?
+
+e. Use summary() to get additional information.
+
+f. Should we include petal width in the model?  What is the p-value associated with it?
+
+g. What is the value or $r^2$?  What is the value of $r$?  What does this mean?
+
+## Problem 4: Modeling Trees
+
+Using the `trees` data frame that comes pre-installed in R, follow the steps below to fit the regression model that uses the tree `Height` to explain the `Volume` of wood harvested from the tree.
+
+a. Create a scatterplot of the data using ggplot.
+
+b. Fit a `lm` model using the command `model <- lm(Volume ~ Height, data=trees)`.
+
+c. Print out the table of coefficients with estimate names, estimated value, standard error, and upper and lower 95% confidence intervals.
+
+d.Add the model fitted values to the `trees` data frame along with the regression model confidence intervals.  Note: the book does this in a super convoluted way.  Don't follow the model in the book.  Instead try cbind.
+
+e. Graph the data and fitted regression line and uncertainty ribbon.
+
+f. Add the R-squared value as an annotation to the graph using annotate.
+
+
+## Problem 5: Birth Weights and Smoking
+
+The data set `phbirths` from the `faraway` package contains information on 
+birth weight, gestational length, and smoking status of mother. We'll fit a 
+quadratic model to predict infant birth weight using the gestational time.
+
+a. Create two scatter plots of gestational length and birth weight, one for each smoking status using ggplot and facet.
+
+b. Create a new dataset where all the observations that are premature (less than 36 weeks) are removed using filter.  Give this dataset a name like "FullTerm". For the remainder of the problem, only use the "FullTerm" dataset.
+
+c. Fit the quadratic model.  Remember to remove eval=FALSE from the code chunk options so your code will run.
+```{r, eval=FALSE}
+        model <- lm(grams ~ poly(gestate,2) * smoke, data=phbirths)
+```
+d. Add the model fitted values to the `phbirths` data frame along with the regression model confidence intervals. Again, don't follow the code in the book; it is more complicated than it needs to be.
+
+e. On your two scatter plots from part (a), add layers for the model fits and ribbon of uncertainty for the model fits.
+    
+
+
+
+
+
+

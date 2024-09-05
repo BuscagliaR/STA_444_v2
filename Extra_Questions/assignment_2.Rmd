@@ -1,0 +1,44 @@
+---
+title: "Assignment 2: Data Frames and Importing Data"
+author: "Bianca Luedeker"
+date: '2023-01-23'
+output: pdf_document
+---
+
+
+
+## Tasks
+Today we will be reading in excel file and csv files.  Before starting the problems, we are going to create a project where we can store all the files we will be using and creating.  
+
+Go to the File tab and select New Project... 
+Select New Directory then New Project.
+Title your Project STA444 or something more creative.  Save your project to your bonsai drive or your download folders.  
+
+Let's make sure everything worked.  Close out of R, find the project folder and open the project.  Now we are in the correct directory (folder).  Save this assignment in your STA444 directory.
+
+## Problem 1
+
+Go to the website https://www.lock5stat.com/datasets3e/, find the Cricket 
+Chirps dataset and duplicate it "by hand" using the dataframe function.
+
+## Problem 2
+
+Extract the Chirps column and find the mean and standard deviation of the chirps.
+
+## Problem 3
+
+Extract the value that is in row 5 column 1 of the Chirps dataset.
+
+## Problem 4
+
+Go to the website https://www.lock5stat.com/datasets3e/, download the cereal dataset to your computer as an xlsx file. Save the file to your STA44 folder. Read in the file.  Find the mean of sugar content of the cereals.
+
+## Problem 5
+ Go to the website https://www.lock5stat.com/datasets3e/, read in the bike 
+commute dataset directly from the internet as a csv file. Find the mean top speed. 
+
+## Problem 6
+Is month coded as a factor?  If not, change it to a factor.
+
+
+

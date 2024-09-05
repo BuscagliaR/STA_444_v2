@@ -1,0 +1,78 @@
+---
+title: "Assignment 4"
+author: "Your Name Here"
+date: "2024-01-25"
+output: pdf_document
+---
+
+## Directions
+
+Read Chapter 4 to complete the following problems.
+
+## Problem 1
+
+Install the package nycflights13 in the console. Load tidyverse and nycflights13 in this RMD file. Suppress the warnings and start up messages.
+ 
+
+## Problem 2
+
+Load the data frame flights.  Use the head command to print out the first few rows.  Notice that the format of the data frame is a tibble.  Use View in the console to examine the entire data frame. Do not use the View function in an RMD.  In previous versions of R Studio, View would prevent the document from knitting.
+
+## Problem 3
+ 
+Use the pipe and the filter function to select all entries in May (the fifth month).  Name this subset May and print the first few rows using the head command.  How many rows are there for May?
+
+## Problem 4
+
+Use filter to create the following subsets.  Give each subset an appropriate name and use the head command to print out the first few rows.  Each time start with the original dataset flights
+
+(a) Had an arrival or delay of two or more hours.
+(b) Flew to Houston(IAH or HOU)
+(c) Were operated by United, American, or Delta.
+(d) Departed in the summer (July, August, and September)
+  
+## Problem 5
+
+Use the function is.na to find how many flights are missing a departure time. 
+
+## Problem 6
+
+Use the arrange function to sort the flights according to departure time.  
+Store the arranged data using an appropriate name and use head to print out the first few rows.
+
+## Problem 7
+
+Run the following code to select all the columns that contain the word time.
+flights %>% select (contains("TIME")).
+
+## Problem 8
+
+Use the select function to pick out all the columns that start with dep.
+
+## Problem 9
+
+Use slice to pick out rows 201 through 300.
+
+## Problem 10
+
+Mutate adds new columns to a dataset.  Create two new columns.  One called
+gain that is dep_delay - arr_delay and another called speed that is 
+distance/air_time * 60.  Call the new dataset flights.modified.  Use the tail function to print out the last rows of flights.modified.
+
+## Problem 11
+
+Start with the flights data.  We will use a chain of pipes to get a smaller
+dataset that we will call Mini.  Do each step using a separate pipe.
+
+(a) Start with the flight dataset.
+(b) Filter to get just flights in June.
+(c) Select the four columns month, day, carrier, and distance.
+(d) Sort the data by distance in descending order.
+(e) Use mutate and if_else to label any distance over 1000 miles long and all other short.  Call this new column imo. Use head to print out the first few rows.
+
+
+
+
+
+
+

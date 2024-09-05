@@ -1,0 +1,77 @@
+---
+title: "Assignment 6"
+author: "Your Name Here"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+
+
+## Directions:
+This assignment covers chapter 6 and  chapter 7.  Please show all work in this document and knit your final draft into a pdf.  Factors are what R calls categorical variables.  Factors can be qualitative or a quantitative variable that we have chopped into a small number of non-overlapping bins or a few discrete values.
+
+## Problem 1: For Loops
+
+I often want to repeat some section of code some number of times. For example, I might want to create a bunch plots that compare the density of a t-distribution with specified degrees of freedom to a standard normal distribution. 
+    
+```{r, fig.height=3, message=FALSE, warning=FALSE}
+    library(ggplot2)
+    df <- 5
+    N <- 1000
+    x.grid <- seq(-3, 3, length=N)
+    data <- data.frame( 
+      x = c(x.grid, x.grid),
+      y = c(dnorm(x.grid), dt(x.grid, df)),
+      type = c( rep('Normal',N), rep('T',N) ) )
+    
+    # make a nice graph
+    myplot <- ggplot(data, aes(x=x, y=y, color=type, linetype=type)) +
+      geom_line() +
+      labs(title = paste('Std Normal vs t with', df, 'degrees of freedom'))
+    
+    # actually print the nice graph we made
+    print(myplot) 
+```
+    
+a. Use a `for` loop to create similar graphs for degrees of freedom $2,3,4,\dots,29,30$.  I actually don't want all 30 graphs in the knitted pdf. Try this out, but we will alter the code in part b to get the plots we want in the knitted pdf. 
+    
+b. In retrospect, perhaps we didn't need to produce all of those. Rewrite your loop so that we only produce graphs for $\left\{ 2,3,5,10,15,20,25,30\right\}$ degrees of freedom. Hint: you can just modify the vector in the `for` statement to include the desired degrees of freedom. Show all 8 plots in your knitted pdf.
+
+## Problem 2: Simulation
+
+It is very common to run simulation studies to estimate probabilities that are difficult to work out. In this exercise we will investigate a gamblingquestion that sparked much of the fundamental mathematics behind the study of [probability](http://homepages.wmich.edu/~mackey/Teaching/145/probHist.html).
+The game is to roll a pair of 6-sided dice 24 times. If a "double-sixes" comes
+up on any of the 24 rolls, the player wins. What is the probability of winning?
+    
+a. We can simulate rolling two 6-sided dice using the `sample()` function with the `replace=TRUE` option. Read the help file on `sample()` to see how to sample from the numbers $1,2,\dots,6$. Sum those two die rolls and save it as `throw`.
+
+b. Write a `for{}` loop that wraps your code from part (a) and then tests if any of the throws of dice summed to 12. Read the help files for the functions `any()` and `all()`. Your code should look something like the following:
+
+```{r, eval=FALSE}
+        throws <- NULL
+        for( i in 1:24 ){
+          throws[i] <- ??????  # Your part (a) code goes here
+        }
+        game <- any( throws == 12 ) # Gives a TRUE/FALSE value
+```
+
+c. Wrap all of your code from part (b) in *another* `for(){}` loop that you run10,000 times. Save the result of each game in a `games` vector that will have 10,000 elements that are either TRUE/FALSE depending on the outcome of that game. You'll need initialize the `games` vector to NULL and modify your part (b) code to save the result into some location in the vector `games`.
+
+d. Finally, calculate win percentage by taking the average of the `games` vector.
+
+## Problem 3
+
+In the package `Lock5Data` there is a dataset `FloridaLakes` that contains water sample measurements from 53 lakes in Florida. Produce a bar graph that shows the `Lake` and `AvgMercury` variables, and make sure that the lakes are ordered by Average Mercury content. _To fix the issue of lake labels being squished together, you could rotate the labels using a `+ theme(axis.text.x = element_text(angle = 90, hjust = 1))` or flipping the coordinate axes. However, you'll likely want to resize the figure so the labels aren't so squished. the chunk options `fig.height` and `fig.width` control the size of the resulting figure._
+
+
+## Problem 4
+
+In the package `Lock5Data`, there is a dataset `FootballBrain` that has brain measurements for 75 individuals. The `Group` variable has three levels: `Control` is somebody that did not play football, `FBNoConcuss` is a football player with no history of concussions, or `FBConcuss` which is a football player with concussion history. The variable `Cogniton` measures their testing composite reaction time score. Change the `Group` labels to something that would make sense to a reader and create a box-plot graph of the groups vs cognition. *Because there is no data for the `Control` group, don't show it on your graph. Also notice that the original data set column name misspells "cognition".*
+
+## Problem 5
+
+In the package `Lock5Data`, there is a dataset `RestaurantTips` that gives tip data from the restaurant First Crush Bistro in Potsdam, NY. Make all necessary modifications to the `Day` variable so that subsequent graphs and tables are labeled in a professional manner. Do a similar modification to the `Credit` variable. Graph the `Bill` versus the `PctTip` for each `Day` of the week where we use `Day` as the variable to facet_grid or facet_wrap on.  Please make sure the days are in the order Sunday, Monday, Tuesday, ... Also include information about if the bill was paid via credit card or cash.
+
+
+
+
