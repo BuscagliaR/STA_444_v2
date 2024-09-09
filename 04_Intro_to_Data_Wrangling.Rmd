@@ -1,7 +1,7 @@
 # Data Wrangling
 
 ```{r, echo=FALSE}
-# Unattach any packages that happen to already be loaded. In general this is unecessary
+# Unattach any packages that happen to already be loaded. In general this is unnecessary
 # but is important for the creation of the book to not have package namespaces
 # fighting unexpectedly.
 pkgs = names(sessionInfo()$otherPkgs)
@@ -39,7 +39,7 @@ with a few extra bits. For now we can ignore the differences, outside knowing th
 
 This chapter will see us begin the use of the pipe `%>%` command. The pipe command `%>%` allows for very readable code with easy work flow. As of R 4.1.0, a native pipe command `|>` was introduced with similar functionality, but this book will continue to focus on the pipes introduced in the `magrittr` package and widely used with `tidyverse` functions. The idea is that the `%>%` operator works by translating the command `a %>% f()` to the expression `f(a)`. This operator works on any function. The beauty of the pipe operator comes when you have a suite of functions that takes input arguments of the same type as their output. 
 
-For example, if we wanted to start with `x`, and first apply function `f()`, then `g()`, and then `h()`, the usual R command would be `h(g(f(x)))` which is hard to read and interpret because you have to start reading at the *innermost* set of parentheses. Using the pipe command `%>%`, this sequence of operations becomes `x %>% f() %>% g() %>% h()`. This type of thinking, sometimes referred to as `tidyverse` philosophy, allows one to think more directly about what you want to execute next, rather than having to continually nest your expressions. This makes work, such as exploratory data analysis, feel much more comfortable and intuitive than traditional nested programming. Piping will become more intuitive the more it is used, and has a variety of operations to simlify work.
+For example, if we wanted to start with `x`, and first apply function `f()`, then `g()`, and then `h()`, the usual R command would be `h(g(f(x)))` which is hard to read and interpret because you have to start reading at the *innermost* set of parentheses. Using the pipe command `%>%`, this sequence of operations becomes `x %>% f() %>% g() %>% h()`. This type of thinking, sometimes referred to as `tidyverse` philosophy, allows one to think more directly about what you want to execute next, rather than having to continually nest your expressions. This makes work, such as exploratory data analysis, feel much more comfortable and intuitive than traditional nested programming. Piping will become more intuitive the more it is used, and has a variety of operations to simplify work.
 
 |     Written         |  Meaning       |
 |:-------------------:|:--------------:|
@@ -239,7 +239,7 @@ Residents  %>%
   add_row( l.name='Reid', Exam1=95.3, Exam2=92.0)
 ```
 
-Notice that the command only added information to the columns provided and filled the rest with `NA`. Because we didn't assign the result of our previous calculation to any object name, R just printed the result. Instead, lets add all of Dr Reid's information and save the result by *overwritting* the `Residents` data frame with the new version.
+Notice that the command only added information to the columns provided and filled the rest with `NA`. Because we didn't assign the result of our previous calculation to any object name, R just printed the result. Instead, lets add all of Dr Reid's information and save the result by *overwriting* the `Residents` data frame with the new version.
 
 ```{r}
 Residents <- Residents %>%
@@ -260,7 +260,7 @@ grades <- Mentors %>%
 grades
 ```
 
-Notice though that if the information of `Mentor` or `Resident` was important to retain, we know longer kept this knowledge. We may have wanted to introduce another column to keep track of the `Type` of doctor if this was important auxiliary information to retain.
+Notice though that if the information of `Mentor` or `Resident` was important to retain, we no longer kept this knowledge. We may have wanted to introduce another column to keep track of the `Type` of doctor if this was important auxiliary information to retain.
 
 ## Subsetting
 
@@ -312,7 +312,7 @@ It is common to want to select particular rows where we have some logical expres
 grades %>% filter(Final > 90)
 ```
 
-You can have multiple logical expressions to select rows and they will be logically combined so that only rows that satisfy all of the conditions are selected. The logicals are joined together using `&` (and) operator or the `|` (or) operator andyou may explicitly use other logicals. For example, a factor column type might be used to select rows where type is either one or two via the following: `type==1 | type==2`. I prefer reading the command `==` as *identical to*, and is an important logical operator when working with factors.
+You can have multiple logical expressions to select rows and they will be logically combined so that only rows that satisfy all of the conditions are selected. The logicals are joined together using `&` (and) operator or the `|` (or) operator and you may explicitly use other logicals. For example, a factor column type might be used to select rows where type is either one or two via the following: `type==1 | type==2`. I prefer reading the command `==` as *identical to*, and is an important logical operator when working with factors.
 
 ```{r}
 # select students with Final grades above 90 and
@@ -406,7 +406,7 @@ grades <- grades %>%
 grades
 ```
 
-To do something similar for the case where we have 3 or more categories, we could use the `if_else()` command repeatedly to address each category level separately. However this is annoying to do because the `ifelse` command is limitedto just two cases, it would be nice if there was a generalization to multiple categories. The  `dplyr::case_when()` function is that generalization. The syntax is `case_when( logicalExpression1~Value1, logicalExpression2~Value2, ... )`. We can have as many `LogicalExpression ~ Value` pairs as we want. 
+To do something similar for the case where we have 3 or more categories, we could use the `if_else()` command repeatedly to address each category level separately. However this is annoying to do because the `ifelse` command is limited to just two cases, it would be nice if there was a generalization to multiple categories. The  `dplyr::case_when()` function is that generalization. The syntax is `case_when( logicalExpression1~Value1, logicalExpression2~Value2, ... )`. We can have as many `LogicalExpression ~ Value` pairs as we want. 
 
 Consider the following data frame that has name, gender, and political party affiliation of six individuals. In this example, we've coded male/female as 1/0 and political party as 1,2,3 for democratic, republican, and independent. 
 
@@ -419,7 +419,7 @@ people <- data.frame(
 people
 ```
 
-Now we'll update the gender and party columns to code these columns in a readable fashion, handling a variable with many levels using the `caes_when()` functionality.
+Now we'll update the gender and party columns to code these columns in a readable fashion, handling a variable with many levels using the `case_when()` functionality.
 
 ```{r}
 people <- people %>%
@@ -530,7 +530,7 @@ The first we must do is to create a data frame with additional information about
 ```{r}
 # group_by:  what variable(s) shall we group on.
 # n() is a function that returns how many rows are in the 
-#   currently selected sub dataframe
+#   currently selected sub data frame
 # .groups tells R to drop the grouping structure after doing the summarize step
 warpbreaks %>% 
   group_by( wool, tension) %>%                   # grouping
@@ -568,8 +568,8 @@ warpbreaks %>%
 
 ## Exercises  {#Exercises_IntroDataWrangling}
 
-1.  The dataset `ChickWeight` tracks the weights of 48 baby chickens (chicks) feed four different diets.
-    a.  Load the dataset using  
+1.  The data set `ChickWeight` tracks the weights of 48 baby chickens (chicks) feed four different diets.
+    a.  Load the data set using  
         ```{r}
         data(ChickWeight)
         ```
@@ -586,7 +586,7 @@ warpbreaks %>%
         the problem. _Hint: The `ifelse()` command will be very convenient here._
     c)  The columns `wgt` and `hgt` measure weight and height in kilograms and centimeters (respectively). Use these to calculate the Body Mass Index (BMI) for each individual where
     $$BMI=\frac{Weight\,(kg)}{\left[Height\,(m)\right]^{2}}$$
-Be mindful of the untis used in the BMI calculation. Some unit conversion is required.
+Be mindful of the units used in the BMI calculation. Some unit conversion is required.
     d)  Double check that your calculated BMI column is correct by examining the summary statistics of the column (e.g. `summary(Body)`). BMI values should be between 18 to 40 or so.  Did you make an error in your calculation?  
     e)  The function `cut` takes a vector of continuous numerical data and creates a factor based on your given cut-points. 
         ```{r}
