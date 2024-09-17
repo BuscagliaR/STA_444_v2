@@ -33,61 +33,54 @@ Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/bPZKP_yYFLo)
 
 ## Control and Flow
 
-Often it is necessary to write scripts that perform different action depending on the data or to automate a task that must be repeated many times. To address these issues we will introduce the `if` statement and its closely related cousin `if else`. To address repeated tasks we will define two types of loops, a `while` loop and a `for` loop. 
+Often it is necessary to write scripts that perform different action depending on the data or to automate a task that must be repeated many times. To address these issues we will introduce the `if` statement and its closely related cousin `ifelse`. To address repeated tasks we will define two types of loops, a `while` loop and a `for` loop.
+
+Although control may not immediately seem important in code, the uses for it become exponentially more important as the complexity of code grows. Control allows an individual to quickly turn on and off features of a function, easily run immense amounts of code with minimal syntax, provide improved functionality by catching errors before they occur, and so many other elements we are slowing growing into throughout this book. Control is the building block to make code that is functional, easy-to-use, and free of erroneous components that may otherwise cause users to struggle to get the desired output.
 
 ## Logical Expressions
 
-The most common logical expressions are the numerical expressions `<`, `<=`, `==`, `!=`, `>=`, `>`. These are the usual logical comparisons from mathematics, with `!=` being the *not equal* comparison. For any logical value or vector of values, the `!` flips the logical values. 
+The most common logical expressions are the numerical expressions you have study in a mathematics course and include `<`, `<=`, `==`, `!=`, `>=`, `>`. These are the usual logical comparisons from mathematics, with `!=` being the *not equal* comparison. For any logical value or vector of values, the `!` flips the logical values. 
+
 ```{r}
-df <- data.frame(A=1:6, B=5:10)
+df <- data.frame(A=1:6, B=6:1)
 df
 
 df %>% mutate(`A==3?`         =  A == 3,
-              `A<=3?`         =  A <= 3,
               `A!=3?`         =  A != 3,
-              `Flip Previous` = ! `A!=3?` )
+              `A<=3?`         =  A <= 3 )
 ```
 
-I find that it is preferable to write logical comparisons using `<` or `<=` rather than the "greater than" versions because the number line is read left to right, so it is much easier to have the smaller value on the left.
+If we have two (or more) vectors of logical values, we can do two *pairwise* operations. The "and" operator `&` will result in a TRUE value if all elements are TRUE.  The "or" operator `|` will result in a TRUE value if any elements are TRUE.
+
 ```{r}
-df %>% mutate( `A < B`  =  A < B)
+df %>% mutate(C = A>=5,  D = B<=4) %>%
+  mutate( result1_and = C & D,  #    C and D both true
+          result2_or = C | D)   #    C or D true
 ```
 
+Next we can summarize a vector of logical values using `any()`, `all()`, and `which()`. `any()` looks for at least one TRUE, `all()` requires all elements to be TRUE, `which()` provides the location of the TRUE elements.
 
-If we have two (or more) vectors of logical values, we can do two *pairwise* operations. The "and" operator `&` will result in a TRUE value if all elements are TRUE.  The "or" operator will result in a TRUE value if either the left hand side or right hand side is TRUE. 
-```{r}
-df %>% mutate(C = A>=0,  D = A<=5) %>%
-  mutate( result1_and = C & D,          #    C and D both true
-          result2_and =  A>=0 & A<=5,   #    directly calculated
-          result3_and =  0 <= A & A<=5, #    more readable 0 <= A <= 5
-          result4_or  =  A<=0 | 5<=A)   #    A not in (0,5) range    
-```
-
-
-Next we can summarize a vector of logical values using `any()`, `all()`, and `which()`. These functions do exactly what you would expect them to do.
 ```{r}
 any(6:10 <= 7 )   # Should return TRUE because there are two TRUE results
 all(6:10 <= 7 )   # Should return FALSE because there is at least one FALSE result
-which( 6:10 <= 7) # return the indices of the TRUE values
+which(6:10 <= 7) # return the indices of the TRUE values
 ```
 
+Finally, we often need to figure out if a character string is in some set of values. Here we create a small data frame with a letter index (maybe a indicator or categorical group variable) and assign a random value to each.  We can then use the operator `%in%` to search through the vector `Type` and return all elements that match elements within our search vector (here we are searching for the `A` and `B` categories).
 
-Finally, I often need to figure out if a character string is in some set of values. 
 ```{r}
-df <- data.frame( Type = rep(c('A','B','C','D'), each=2), Value=rnorm(8) )
+df <- data.frame( Type = rep(c('A','B','C','D'), times=2), Value=rnorm(8) )
 df
 
 # df %>% filter( Type == 'A' | Type == 'B' )
 df %>% filter( Type %in% c('A','B') )   # Only rows with Type == 'A' or Type =='B'
 ```
 
-
-
 ## Decision statements
 
-### In `dplyr` wrangling
+### Simplified `dplyr` wrangling
 
-A very common task within a data wrangling pipeline is to create a new column that recodes information in another column.  Consider the following data frame that has name, gender, and political party affiliation of six individuals. In this example, we've coded male/female as 1/0 and political party as 1,2,3 for democratic, republican, and independent. 
+A very common task within a data wrangling pipeline is to create a new column that recodes information in another column. Consider the following data frame that has name, gender, and political party affiliation of six individuals. In this example, we've coded male/female as 1/0 and political party as 1,2,3 for democratic, republican, and independent. These codings are not very readable, but this is a common way data is stored, often with a 'key' that informs the user what the number codings mean.
 
 ```{r}
 people <- data.frame(
@@ -98,26 +91,17 @@ people <- data.frame(
 people
 ```
 
-The command `ifelse()` works quite well within a `dplyr::mutate()` command and 
-it responds correctly to vectors. The syntax is 
-`ifelse( logical.expression, TrueValue, FalseValue )`. The return object of this
-function is a vector that is appropriately made up of the TRUE and FALSE results.
+The command `ifelse()` works quite well within a `dplyr::mutate()` command and it responds correctly to vectors. We used this briefly in Chapter 4 without much discussion, but are now ready to use this as an important tool to improve the readability of our variable levels. The syntax is `ifelse( logical.expression, TrueValue, FalseValue )`. The return object of this function is a vector that is appropriately made up of the TRUE and FALSE results. We will see some tricks of this function as we work through the chapter and exercises.
 
-For example, there we take the column `gender` and for each row test to see if the
-value is `0`. If it is, the resulting element is `Female` otherwise it is `Male`.
+For example, lets take the column `gender` and for each row test to see if the value is `0`. If it is, the resulting element is `Female` otherwise it is `Male`.
+
 ```{r}
 people <- people %>%
   mutate( gender2 = ifelse( gender == 0, 'Female', 'Male') )
 people
 ```
 
-To do something similar for the case where we have 3 or more categories, we could
-use the `ifelse()` command repeatedly to address each category level separately.
-However because the `ifelse` command is limited to just two cases, it would be
-nice if there was a generalization to multiple categories. The  
-`dplyr::case_when` function is that generalization. The syntax is 
-`case_when( logicalExpression1~Value1, logicalExpression2~Value2, ... )`. 
-We can have as many `LogicalExpression ~ Value` pairs as we want. 
+To do something similar for the case where we have 3 or more categories, we could use the `ifelse()` command repeatedly to address each category level separately. However, because the `ifelse()` command is limited to just two cases, we may have to use it many times, keep track to properly not override previous iterations. In these cases, it is better to use a generalization of the `ifelse()` function that operates on multiple categories. The `dplyr::case_when` function is that generalization. The syntax is `case_when( logicalExpression1~Value1, logicalExpression2~Value2, ... )`. We can have as many `LogicalExpression ~ Value` pairs as we want. As a note, I often find myself using this when recoding large data sets that contain, for example, many different patient diseases that come with simple codings. When I prepare graphs, I want the proper full names showing, and not just a simple code that may not be obvious to all readers. The `case_when()` function allows me to accomplish this, and I think of it as a 'mapping' that takes many different simple codes and outputs a vector with proper disease names. Below we use the `case_when()` function to deal with renaming the three political parties.
 
 ```{r}
 people <- people %>%
@@ -128,20 +112,11 @@ people <- people %>%
 people
 ```
 
-Often the last case is a catch all case where the logical expression will 
-ALWAYS evaluate to TRUE and this is the value for all other input.
+Often the last case is a catch all where the logical expression will ALWAYS evaluate to TRUE and this is the value for all other inputs that weren't properly managed previously.  As another alternative to the problem of recoding factor levels, we could use the command `forcats::fct_recode()` function.  Chapter 7 - Factors provides more details about this function, but it operates similarly to the `dplyr:case_when()`, but specifically for data of the factor type.
 
-As another alternative to the problem of recoding factor levels, we could use
-the command `forcats::fct_recode()` function.  See the Factors chapter in this
-book for more information about factors.
+### Base `if else` statements
 
-### General `if else`
-While programming, I often need to perform expressions that are more complicated
-than what the `ifelse()` command can do. Remember, the `ifelse()` command only
-can produce a vector. For any logic that is more complected that simply producing
-an output vector, we'll need a more flexible approach. The downside is that it
-is slightly more complicated to use and *does not* automatically handle vector
-inputs for the comparison.
+While programming, I often need to perform expressions that are more complicated than what the `ifelse()` command can do. Remember, the `ifelse()` command only can produce a vector. For any logic that is more complicated than simply producing an output vector, we'll need a more flexible approach. The downside is that it is slightly more complicated to use and *does not* automatically handle vector inputs. The upside is that we can produce long chains of `if` then `else` statements, provide significant control over the output.
 
 The general format of an `if` or an `if else` is presented below:.
 
@@ -159,22 +134,11 @@ if( logical.test ){
 }
 ```
 
-where the else part is optional. 
+The `else` portion is optional and allows you to control what happens if the `logical.test` returns FALSE. In some cases you might want nothing to happen, in which case no `else` statement is required. In other cases, you may want to continue exploring possible options or execute a different unique code chunk. The `else` statement can even be another `if` command, requiring further logicals to be evaluated prior to output!
 
-Suppose that I have a piece of code that generates a random variable from the
-Binomial distribution with one sample (essentially just flipping a coin) but
-I'd like to label it head or tails instead of one or zero.
+Suppose that I have a piece of code that generates a single random variable from the Binomial distribution. This can be thought of as a flipping a coin (a fair coin if we set `p = 0.5`). We would like to label it head or tails instead of one or zero.
 
-The test expression inside the `if()` is evaluated and if it is true, then the
-subsequent statement is executed. If the test expression is false, the next
-statement is skipped. The way the R language is defined, only the first statement
-after the if statement is executed (or skipped) depending on the test expression.
-If we want multiple statements to be executed (or skipped), we will wrap those 
-expressions in curly brackets `{ }`. I find it easier to follow the `if else` 
-logic when I see the curly brackets so I use them even when there is only one 
-expression to be executed. Also notice that the RStudio editor indents the code
-that might be skipped to try help give you a hint that it will be conditionally
-evaluated.
+If the `logical.test` expression inside the `if()` is evaluates to TRUE, then the subsequent statement is executed. If the `logical.test` evaluates instead to FALSE, the next statement is skipped. The way the R language is defined, only the first statement after the `if()` is executed depending on the `logical.test`. If we want multiple statements to be executed (or skipped), we will wrap those expressions in curly brackets `{ }`. I find it easier to follow the `if else` logic when I see the curly brackets so I use them even when there is only one expression to be executed (they are not strictly required, so sometimes I get lazy if the resulting expression is a single line of code). Also notice that the RStudio editor indents the code that might be skipped to try help give you a hint that it will be conditionally evaluated. 
 
 ```{r}
 # Flip the coin, and we get a 0 or 1
@@ -184,26 +148,23 @@ result
 # convert the 0/1 to Tail/Head
 if( result == 0 ){
   result <- 'Tail'
-  print(" in the if statement, got a Tail! ")
+  print("Output from the if() statement, this means we saw a Tail! ")
 }else{
   result <- 'Head'
-  print("In the else part!") 
+  print("Output ffrom the else() statement, this means we saw a Head!") 
 }
 result
 ```
 
-Run this code several times until you get both cases several times. Notice that
-in the Environment tab in RStudio, the value of the variable `result` changes as
-you execute the code repeatedly.
+Try running the code chunk above many times - the output in the textbook will be completely random if it is showing heads or tails! Notice as you run the code chunk over and over that in the Environment tab in RStudio (default location is the upper right corner), the value of the variable `result` changes as you execute the code repeatedly.
 
-
-To provide a more statistically interesting example of when we might use an
-`if else` statement, consider the calculation of a p-value in a 1-sample t-test
-with a two-sided alternative. Recall that the calculation was:
+To provide a more statistically interesting example of when we might use an `if else` statement, consider the calculation of a p-value in a 1-sample t-test with a two-sided alternative. If you are unfamiliar with this calculation, the area is found based on the 'sign' (positive/negative) of the corresponding test statistic. The calculation can be summarized as:
 
 * If the test statistic t is negative, then p-value = $2*P\left(T_{df} \le t \right)$
  
-* If the test statistic t is positive, then p-value = $2*P\left(T_{df} \ge t \right)$. 
+* If the test statistic t is positive, then p-value = $2*P\left(T_{df} \ge t \right)$.
+
+Below provides code that executes the proper calculation by checking the sign of the test statistic (t). You again may want to run this code chunk many times and watch what changes as the value of `t` changes! You'll notice that `t` jumps around the value of zero randomly, being positive or negative with roughly $50\%$ probability, yet the p-value is properly calculated each time!  The larger the magnitude of `t` (that is, the absolute value of `t`), the smaller the corresponding p-value.
   
 ```{r}
 # create some fake data
@@ -211,7 +172,7 @@ n  <- 20   # suppose this had a sample size of 20
 x  <- rnorm(n, mean=2, sd=1)
 
 # testing H0: mu = 0  vs Ha: mu =/= 0
-t  <- ( mean(x) - 0 ) / ( sd(x)/sqrt(n) )
+t  <- ( mean(x) - 2 ) / ( sd(x)/sqrt(n) )
 df <- n-1
 if( t < 0 ){
   p.value <- 2 * pt(t, df)
@@ -223,37 +184,30 @@ if( t < 0 ){
 p.value
 ```
 
-This sort of logic is necessary for the calculation of p-values and so something
-similar is found somewhere inside the `t.test()` function.
+This sort of logic is necessary for the calculation of p-values and  something similar is found somewhere inside the `t.test()` function.
 
+### Nested `if else` statements
 
-Finally we can nest `if else` statements together to allow you to write code
-that has many different execution routes.
+Finally we can nest `if else` statements together to allow you to write code that has many different execution routes. The example below random generates a number between 0 and 5 and then strictly rounds UP (this is known as the `ceiling()`). Depending on the number drawn, the output changes! Again - try it many times to see how ti works, and see how the value of `rand.numb` changes in the Environment tab of RStudio.
 
 ```{r}
-# randomly grab a number between 0,5 and round it up to 1,2, ..., 5
-birth.order <- ceiling( runif(1, 0,5) )  
-if( birth.order == 1 ){
-  print('The first child had more rules to follow')
-}else if( birth.order == 2 ){
-  print('The second child was ignored')
-}else if( birth.order == 3 ){
-  print('The third child was spoiled')
+# randomly grab a number between [0,5] and round it up to 1,2,3,4,5
+rand.numb <- ceiling( runif(1,0,5) )  
+if( rand.numb == 1 ){
+  print('We got a 1!')
+}else if( rand.numb == 2 ){
+  print('A 2 was observed!')
+}else if( rand.numb == 3 ){
+  print('The number 3 was drawn!')
 }else{
-  # if birth.order is anything other than 1, 2 or 3
-  print('No more unfounded generalizations!')
+  print('This was either a 4 or 5, not quite sure!')
 }
 ```
 
-
-
 ## Loops
 
-It is often desirable to write code that does the same thing over and over,
-relieving you of the burden of repetitive tasks. To do this we'll need a way
-to tell the computer to repeat some section of code over and over. However we'll
-usually want something small to change each time through the loop and some way
-to tell the computer how many times to run the loop or when to stop repeating.
+It is often desirable to write code that does the same thing over and over, relieving you of the burden of repetitive tasks. To do this we'll need a way to tell the computer to repeat some section of code over and over. However, we'll
+more then likely want something small to change each time through the loop. Loops give us a way to execute the same code many times, changing something slightly each 'iteration' of the loop, and provide the computer either how many times to run the loop or a condition for when to stop repeating.
 
 ### `while` Loops
 
@@ -262,17 +216,14 @@ The basic form of a `while` loop is as follows:
 ```{r, eval=FALSE}
 # while loop with multiple lines to be repeated
 while( logical.test ){
-  expression1      # multiple lines of R code
+  expression1      # you can have as much code here as neccassary!
   expression2
 }
 ```
 
+**Be warned now** that `while` loops require that the conditions within the `logical.test` are updated within the loop, in the above this is include as something like `expression2` changing the value within the `logical.test`.  If this doesn't happen, then welcome to the world of infinite looping, something we would like to avoid!
 
-The computer will first evaluate the test expression. If it is true, it will
-execute the code once. It will then evaluate the test expression again to see if
-it is still true, and if so it will execute the code section a third time. The
-computer will continue with this process until the test expression finally
-evaluates as false. 
+The computer will first evaluate the test expression `logical.test`. If it is TRUE, it will execute the code within the `while` loop, denoted above as `expression1` and `expression2`. When the code within the loop is completed, evaluation returns to the beginning of the `while` loop and evaluates the `logical.test` again. If it is still TRUE, the loop will execute again. This continues until the `logical.test` finally evaluates as FALSE. Hence the warning above.  Below is a little code chunk that doubles the value of `x` each iteration, and eventually `x` becomes $100$ or greater, and the loop stops. If you run the code chunk below, notice that the final value of `x` is set to $128$, which fails the condition `x < 100`.
 
 ```{r}
 x <- 1
@@ -282,24 +233,22 @@ while( x < 100 ){
 }
 ```
 
+It is very common to forget to update the variable used in the test expression. In that case the test expression will never be FALSE and the computer will never stop. This unfortunate situation is called an *infinite loop*. Avoid ever letting this happen - you have now been warned twice!
 
-It is very common to forget to update the variable used in the test expression. In that case the test expression will never be false and the computer will never stop. This unfortunate situation is called an *infinite loop*.
 ```{r, eval=FALSE}
 # Example of an infinite loop!  Do not Run!
 x <- 1
 while( x < 10 ){
-  print(x)
+  print(x) # x stays 1 forever and the logical test never fails!
 }
 ```
 
-
 ### `for` Loops
 
-Often we know ahead of time exactly how many times we should go through the loop.
-We could use a `while` loop, but there is also a second construct called a `for`
-loop that is quite useful.
+Often we know ahead of time exactly how many times we should go through the loop or can control the numbers of times based on the values within a vector of interest. We could use a `while` loop, but there more specific construct called a `for` loop that is useful for execution of code a *known* number of times.
 
 The format of a for loop is as follows: 
+
 ```{r, eval=FALSE}
 for( index in vector ){
   expression1
@@ -307,27 +256,18 @@ for( index in vector ){
 }
 ```
 
-where the `index` variable will take on each value in `vector` in succession and
-the next statement will be evaluated. As always, the statement can be multiple
-statements wrapped in curly brackets {}.
+The `index` variable will take on each value in `vector` in succession and the next statement will be evaluated. As always, the statement can be multiple statements wrapped in curly brackets {} and include as much code as neccassary to get the job done. Notice how the statement below changes as the `for` loop is executed.
+
 ```{r}
 for( i in 1:5 ){
   print( paste("In the loop and current value is i =", i) )
 }
 ```
 
+What is happening is that `i` starts out as the first element of the vector `c(1,2,3,4,5)`, in this case, `i` starts out as 1. After `i` is assigned, the statements in the curly brackets are then evaluated. Once all code within those statements is executed , `i` is reassigned to the next element of the vector. This process is repeated until `i` has been assigned to each
+element of the given vector. Although traditionally we use `i` and `j` and the index variable, R is a flexible language that will allow you to use any *object* as your iterator.
 
-What is happening is that `i` starts out as the first element of the vector
-`c(1,2,3,4,5)`, in this case, `i` starts out as 1. After `i` is assigned, the
-statements in the curly brackets are then evaluated. Once we get to the end of
-those statements, i is reassigned to the next element of the vector
-`c(1,2,3,4,5)`. This process is repeated until `i` has been assigned to each
-element of the given vector. It is somewhat traditional to use `i` and `j`
-and the index variables, but they could be anything.
-
-While the recipe above is the minimal definition of a `for` loop, there is
-often a bit more set up to create a result vector or data frame that will store
-the steps of the `for` loop.
+While the recipe above is the minimal definition of a `for` loop, there is often a bit more set up to create a *result* vector or data frame that will store the steps of the `for` loop. We don't typically want to print text to the screen, but store the output of a calculation into an object for later use. The code below shows an outline of how we might create a `result` object that will contain the output of our code.
 
 ```{r, eval=FALSE}
 N <- 10 
@@ -338,10 +278,7 @@ for( i in 1:N ){
 }
 ```
 
-
-We can use this loop to calculate the first $10$ elements of the Fibonacci
-sequence. Recall that the Fibonacci sequence is defined by 
-$F_{i}=F_{i-1}+F_{i-2}$ where $F_{1}=0$ and $F_{2}=1$.
+We can use this loop to calculate the first $10$ elements of the Fibonacci sequence. Recall that the Fibonacci sequence is defined by $F_{i}=F_{i-1}+F_{i-2}$ with two starting conditions $F_{1}=0$ and $F_{2}=1$. Although for clarity of the book the object `F` is output to screen with the `print()` function, notice by running the code in your own terminal, you will end up with an `F` object that stores the first $10$ Fibonacci numbers.
 
 ```{r}
 N <- 10                # How many Fibonacci numbers to create
@@ -355,19 +292,15 @@ for( i in 3:N ){
 }
 ```
 
-For a more statistical case where we might want to perform a loop, we can
-consider the creation of the bootstrap estimate of a sampling distribution.
-The bootstrap distribution is created by repeatedly re-sampling with replacement
-from our original sample data, running the analysis for each re-sample, and then
-saving the statistic of interest.
+For a more statistical case where we might want to perform a loop, we can consider the creation of the bootstrap estimate of a sampling distribution. The bootstrap distribution is created by repeatedly re-sampling with replacement from our original sample data, running the analysis for each re-sample, and then saving the statistic of interest. This is a very powerful statistical technique that I hope everyone gets to learn in a later course! Here is some code that runs a bootstrap analysis of the mean `Height` from the `trees` data set.
 
-```{r, ForLoopExample, cache=TRUE, message=FALSE, warning=FALSE, fig.height=3}
+```{r, BootstrapExample, cache=TRUE, message=FALSE, warning=FALSE, fig.height=3}
 library(dplyr)
 library(ggplot2)
 
-# bootstrap from the trees dataset.
+# bootstrap 5000 resamples from the trees dataset.
 SampDist <- data.frame(xbar=NULL) # Make a data frame to store the means 
-for( i in 1:1000 ){
+for(i in 1:5000){
   ## Do some stuff
   boot.data <- trees %>% dplyr::sample_frac(replace=TRUE)  
   boot.stat <- boot.data %>% dplyr::summarise(xbar=mean(Height)) # 1x1 data frame
@@ -381,64 +314,26 @@ str(SampDist)
 
 # Plot the output
 ggplot(SampDist, aes(x=xbar)) + 
-  geom_histogram( binwidth=0.25) +
-  labs(title='Trees Data: Bootstrap distribution of xbar')
+  geom_histogram( bins = 25, color='black', fill='grey50') +
+  labs(title='Trees Data: Bootstrap distribution of Mean Height (xbar)')
 ```
-
-### `mosaic::do()` loops
-
-Many times when using a `for` loop, we want to save some quantity for each pass
-through the `for` loop. Because this is such a common tasks, the `mosaic::do()`
-function automates the creation of the output data frame and the saving each
-repetition. This function is intended to hide the coding steps that often trips
-up new programmers.  
-
-```{r, DoLoopExample, cache=TRUE, message=FALSE, warning=FALSE, fig.height=3}
-# Same Loop 
-SampDist <- mosaic::do(1000) * {
-  trees %>% dplyr::sample_frac(replace=TRUE)  %>%
-    dplyr::summarise(xbar=mean(Height)) %>%       # 1x1 data frame
-    pull(xbar)                                    # Scalar 
-}
-
-# Structure of the SampDist object 
-str(SampDist)
-
-# Plot the output
-ggplot(SampDist, aes(x=result)) + 
-  geom_histogram( binwidth=0.25) +
-  labs(title='Trees Data: Bootstrap distribution of xbar')
-```
-
 
 ## Functions
-It is very important to be able to define a piece of programming logic that is
-repeated often. For example, I don't want to have to always program the 
-mathematical code for calculating the sample variance of a vector of data.
-Instead I just want to call a function that does everything for me and I don't
-have to worry about the details. 
 
-While hiding the computational details is nice, fundamentally writing functions
-allows us to think about our problems at a higher layer of abstraction. For
-example, most scientists just want to run a t-test on their data and get the
-appropriate p-value out; they want to focus on their problem and not how to
-calculate what the appropriate degrees of freedom are. 
-Another statistical example where functions are important is a bootstrap data
-analysis where we need to define a function that calculates whatever statistic
-the research cares about.
+It is very important to be able to define a piece of programming logic that is repeated often. For example, I don't want to have to always program the mathematical code for calculating the sample variance of a vector of data. Instead I just want to call a function that does everything for me and I don't have to worry about the details. 
 
-The format for defining your own function is 
+While hiding the computational details is nice, fundamentally writing functions allows us to think about our problems at a higher layer of abstraction. For example, most scientists just want to run a t-test on their data and get the appropriate p-value; they want to focus on their problem and not how to conduct the calculation in detail. Another statistical example where functions are important is a bootstrap data analysis where we need to define a function that calculates whatever statistic the research cares about.
+
+The format for defining your own function is
+
 ```{r, eval=FALSE}
 function.name <- function(arg1, arg2, arg3){
-  statement1
-  statement2
+  statement1 # likely involving arg1, arg2, and/or arg3
+  statement2 # likely involving arg1, arg2, and/or arg3
 }
 ```
 
-where `arg1` is the first argument passed to the function and `arg2` is the second.
-
-To illustrate how to define your own function, we will define a variance 
-calculating function.
+where `arg1`, `arg2`, and `arg3` are the arguments of the function in which the user can change based on their needs. To illustrate how to define your own function, we will define a variance calculating function. The function takes in a vector of values `x`, which can be of any size and contain any variety of numbers, and outputs the properly calculated sample variance.
 
 ```{r}
 # define my function
@@ -451,38 +346,24 @@ my.var <- function(x){
 }
 ```
 
+With our funtion created, we can now feed it any vector of data we would like and obtain the sample variance.
+
 ```{r}
 # create a vector that I wish to calculate the variance of
-test.vector <- c(1,2,2,4,5)
+test.vector <- c(1,2,3,4,5)
 
 # calculate the variance using my function
 calculated.var <- my.var( test.vector )
 calculated.var
 ```
 
-Notice that even though I defined my function using `x` as my vector of data, and
-passed my function something named `test.vector`, R does the appropriate renaming.
-If my function doesn't modify its input arguments, then R just passes a pointer to
-the inputs to avoid copying large amounts of data when you call a function. If
-your function modifies its input, then R will take the input data, copy it, and
-then pass that new copy to the function. This means that a function cannot modify
-its arguments. In Computer Science parlance, R does not allow for procedural side
-effects. Think of the variable `x` as a placeholder, with it being replaced by
-whatever gets passed into the function.
+Notice that even though I defined my function using `x` as my vector of data, and passed my function something named `test.vector`, R does the appropriate renaming. If my function doesn't modify its input arguments, then R just passes a pointer to the inputs to avoid copying large amounts of data when you call a function. If your function modifies its input, then R will take the input data, copy it, and then pass that new copy to the function. This means that a function cannot modify its arguments. In Computer Science parlance, R does not allow for procedural side effects. Think of the variable `x` as a placeholder, with it being replaced by whatever gets passed into the function.
 
-When I call a function, it might cause something to happen (e.g. draw a plot); or,
-it might do some calculations, the result of which is returned by the function,
-and we might want to save that. Inside a function, if I want the result of some
-calculation saved, I return the result as the output of the function. The way I
-specify to do this is via the `return` statement. (Actually R doesn't completely
-require this. But the alternative method is less intuitive and I strongly
-recommend using the `return()` statement for readability.)
+When I call a function, it might cause something to happen (e.g. draw a plot); or, it might do some calculations, the result of which is returned by the function, and we might want to save that. Inside a function, if I want the result of some
+calculation saved, I `return` the result as the output of the function. The way I specify this is via the `return` statement. (Actually R doesn't completely require this. But the alternative method is less intuitive and I strongly
+recommend using the `return()` statement.)
 
-By writing a function, I can use the same chunk of code repeatedly. This means
-that I can do all my tedious calculations inside the function and just call the
-function whenever I want and happily ignore the details. Consider the function
-`t.test()` which we have used to do all the calculations in a t-test. We could
-write a similar function using the following code:
+By writing a function, I can use the same chunk of code repeatedly. This means that I can do all my tedious calculations inside the function and just call the function whenever I want and happily ignore the details. Consider the function `t.test()` which we have used previously to do all calculations involved in a t-test. We could write a similar function using the following code:
 
 ```{r}
 # define my function
@@ -500,7 +381,8 @@ one.sample.t.test <- function(input.data, mu0){
   # fashion, the following is ugly, but works...
   # Notice that this function returns a character string
   # with the necessary information in the string.
-  return( paste('t =', round(t, digits=3), ' and p.value =', round(p.value, 3)) )
+  # This is a great place to make a nice data frame output using Chapter 4 material!
+  return( paste('t =', round(t, digits=3), 'and p.value =', round(p.value, 3)) )
 }
 ```
 
@@ -510,174 +392,146 @@ test.data <- c(1,2,2,4,5,4,3,2,3,2,4,5,6)
 one.sample.t.test( test.data, mu0=2 )
 ```
 
-Nearly every function we use to do data analysis is written in a similar fashion.
-Somebody decided it would be convenient to have a function that did an ANOVA
-analysis and they wrote something that is similar to the above function, but is
-a bit grander in scope. Even if you don't end up writing any of your own functions,
-knowing how  will help you understand why certain functions you use are designed
-the way they are. 
+Nearly every function we use to do data analysis is written in a similar fashion. Somebody decided it would be convenient to have a function that did an ANOVA analysis and they wrote something similar to the above function, but is a bit grander in scope. Even if you don't end up writing any of your own functions, knowing how will help you understand why certain functions you use are designed the way they are.
 
-## Exercises  {#Exercises_FlowControl}
+## Exercises {#Exercises_FlowControl}
 
-1.  I've created a dataset about presidential candidates for the 2020 US election
-    and it is available on the github website for my STA 141 
+### Exercise 1 {-}
 
-    ```{r, message=FALSE}
-    prez <- readr::read_csv('https://raw.githubusercontent.com/dereksonderegger/444/master/data-raw/Prez_Candidate_Birthdays')
-    prez
-    ```
-    a)  Re-code the Gender column to have Male and Female levels. Similarly convert 
-        the party variable to be Democratic or Republican. *You may write this using*
-        *a `for()` loop with an `if(){ ... }else{...}` structure nested inside, or simply*
-        *using a `mutate()` statement with the `ifelse()` command inside. I believe*
-        *the second option is MUCH easier.*
-    b)  Bernie Sanders was registered as an Independent up until his 2016 presidential 
-        run. Change his political party value into 'Independent'.
+Presidential candidates for the 2020 US election have been coded into a data frame that is available on the github website for this textbook:
 
-2.  The $Uniform\left(a,b\right)$ distribution is defined on x $\in [a,b]$ and 
-    represents a random variable that takes on any value of between `a` and `b` 
-    with equal probability. Technically since there are an infinite number of 
-    values between `a` and `b`, each value has a probability of 0 of being selected 
-    and I should say each interval of width $d$ has equal probability. It has the 
-    density function 
-    $$f\left(x\right)=\begin{cases}
-    \frac{1}{b-a} & \;\;\;\;a\le x\le b\\
-    0 & \;\;\;\;\textrm{otherwise}
-    \end{cases}$$
+```{r, message=FALSE}
+prez <- readr::read_csv('https://raw.githubusercontent.com/BuscagliaR/STA_444_v2/main/data-raw/Prez_Candidate_Birthdays')
+prez
+```
 
-    The R function `dunif()` evaluates this density function for the above 
-    defined values of x, a, and b. Somewhere in that function, there is a chunk 
-    of code that evaluates the density for arbitrary values of $x$. Run this code 
-    a few times and notice sometimes the result is $0$ and sometimes it is 
-    $1/(10-4)=0.16666667$.
+**a)** Re-code the Gender column to have Male and Female levels. Similarly convert the party variable to be Democratic or Republican. *You may write this using a `for()` loop with an `if(){ ... }else{...}` structure nested inside, or simply using a `mutate()` statement with the `ifelse()` command inside. I believe the second option is MUCH easier.*
+  
+**b)** Bernie Sanders was registered as an Independent up until his 2016 presidential run. Change his political party value into 'Independent'.
+
+### Exercise 2 {-}
+
+The $Uniform\left(a,b\right)$ distribution is defined on x $\in [a,b]$ and represents a random variable that takes on any value of between `a` and `b` with equal probability. Technically since there are an infinite number of values between `a` and `b`, each value has a probability of 0 of being selected and I should say each interval of width $d$ has equal probability. It has the density function
     
-    ```{r}
-    a <- 4      # The min and max values we will use for this example
-    b <- 10     # Could be anything, but we need to pick something
+$$
+f\left(x\right)=\begin{cases}
+  \frac{1}{b-a} & \;\;\;\;a\le x\le b\\
+  0 & \;\;\;\;\textrm{otherwise}
+\end{cases}
+$$
+
+The R function `dunif()` evaluates this density function for the above defined values of x, a, and b. Somewhere in that function, there is a chunk of code that evaluates the density for arbitrary values of $x$. Run this code a few times and notice sometimes the result is $0$ and sometimes it is $1/(10-4)=0.16666667$.
     
-    x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+```{r}
+a <- 4      # The min and max values we will use for this example
+b <- 10     # Could be anything, but we need to pick something
     
-    # what is value of f(x) at the randomly selected x value?  
-    dunif(x, a, b)
-    ```
+x <- runif(n=1, 0,10)  # one random value between 0 and 10
+
+# what is value of f(x) at the randomly selected x value?  
+dunif(x, a, b)
+```
     
-    We will write a sequence of statements that utilizes if statements to 
-    appropriately calculate the density of `x`, assuming that `a`, `b` , and `x` 
-    are given to you, but your code won't know if `x` is between `a` and `b`. 
-    That is, your code needs to figure out if it is and give either `1/(b-a)` 
-    or `0`.
+We will write a sequence of statements that utilizes if statements to appropriately calculate the density of `x`, assuming that `a`, `b` , and `x` are given to you, but your code won't know if `x` is between `a` and `b`. That is, your code needs to figure out if it is and give either `1/(b-a)` or `0`.
     
-    a. We could write a set of `if else` statements.
-        ```{r, eval=FALSE}
-        a <- 4
-        b <- 10
-        x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+**a)** We could write a set of `if else` statements.
+
+```{r, eval=FALSE}
+a <- 4
+b <- 10
+x <- runif(n=1, 0,10)  # one random value between 0 and 10 
         
-        if( x < a ){
-          result <- ????      # Replace ???? with something appropriate!
-        }else if( x <= b ){
-          result <- ????
-        }else{
-          result <- ????
-        }
-        print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
-        ```
-        Replace the `????` with the appropriate value, either 0 or 
-        $1/\left(b-a\right)$. Run the code repeatedly until you are certain that 
-        it is calculating the correct density value.
+if( x < a ){
+  result <- ????      # Replace ???? with something appropriate!
+}else if( x <= b ){
+  result <- ????
+}else{
+  result <- ????
+}
+print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
+```
         
-    b.  We could perform the logical comparison all in one comparison. Recall 
-        that we can use `&` to mean “and” and `|` to mean “or”. In the following 
-        two code chunks, replace the `???` with either `&` or `|` to make the 
-        appropriate result.
+Replace the `????` with the appropriate value, either 0 or $1/\left(b-a\right)$. Run the code repeatedly until you are certain that it is calculating the correct density value.
         
-        i. 
-            ```{r, eval=FALSE}
-            x <- runif(n=1, 0,10)  # one random value between 0 and 10 
-            if( (a<=x) ??? (x<=b) ){
-              result <- 1/(b-a)
-            }else{
-              result <- 0
-            }
-            print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
-            ```
-        ii. 
-            ```{r, eval=FALSE}
-            x <- runif(n=1, 0,10)  # one random value between 0 and 10 
-            if( (x<a) ??? (b<x) ){
-              result <- 0
-            }else{
-              result <- 1/(b-a)
-            }
-            print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
-            ```
-        iii.
-            ```{r, eval=FALSE}
-            x <- runif(n=1, 0,10)  # one random value between 0 and 10 
-            result <- ifelse( a<=x & x<=b, ???, ??? )
-            print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
-            ```
+**b)** We could perform the logical comparison all in one comparison. Recall that we can use `&` to mean “and” and `|` to mean “or”. In the following two code chunks, replace the `???` with either `&` or `|` to make the appropriate result.
 
+*i.* 
+  
+```{r, eval=FALSE}
+x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+if( (a<=x) ??? (x<=b) ){
+  result <- 1/(b-a)
+  }else{
+    result <- 0
+  }
+print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
+```
+        
+*ii.*
+  
+```{r, eval=FALSE}
+x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+if( (x<a) ??? (b<x) ){
+  result <- 0
+  }else{
+    result <- 1/(b-a)
+    }
+print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
+```
 
-3.  I often want to repeat some section of code some number of times. For example, 
-    I might want to create a bunch plots that compare the density of a t-distribution 
-    with specified degrees of freedom to a standard normal distribution. 
-    
-    ```{r, fig.height=3, message=FALSE, warning=FALSE}
-    library(ggplot2)
-    df <- 5
-    N <- 1000
-    x.grid <- seq(-3, 3, length=N)
-    data <- data.frame( 
-      x = c(x.grid, x.grid),
-      y = c(dnorm(x.grid), dt(x.grid, df)),
-      type = c( rep('Normal',N), rep('T',N) ) )
-    
-    # make a nice graph
-    myplot <- ggplot(data, aes(x=x, y=y, color=type, linetype=type)) +
-      geom_line() +
-      labs(title = paste('Std Normal vs t with', df, 'degrees of freedom'))
-    
-    # actually print the nice graph we made
-    print(myplot) 
-    ```
-    
-    a)  Use a `for` loop to create similar graphs for degrees of freedom 
-        $2,3,4,\dots,29,30$. 
-    
-    b)  In retrospect, perhaps we didn't need to produce all of those. Rewrite 
-        your loop so that we only produce graphs for 
-        $\left\{ 2,3,4,5,10,15,20,25,30\right\}$ degrees of freedom. 
-        *Hint: you can just modify the vector in the `for` statement to include*
-        *the desired degrees of freedom.*
+*iii.*
 
-4.  It is very common to run simulation studies to estimate probabilities that
-    are difficult to work out. In this exercise we will investigate a gambling
-    question that sparked much of the fundamental mathematics behind the study
-    of [probability](http://homepages.wmich.edu/~mackey/Teaching/145/probHist.html).
+```{r, eval=FALSE}
+x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+result <- ifelse( a<=x & x<=b, ???, ??? )
+print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
+```
+
+### Exercise 3 {-}
+
+I often want to repeat some section of code some number of times. For example, I might want to create a bunch plots that compare the density of a t-distribution with specified degrees of freedom to a standard normal distribution. 
     
-    The game is to roll a pair of 6-sided dice 24 times. If a "double-sixes" comes
-    up on any of the 24 rolls, the player wins. What is the probability of winning?
+```{r, fig.height=3, fig.align='center', message=FALSE, warning=FALSE}
+library(ggplot2)
+df <- 5
+N <- 1000
+x.grid <- seq(-3, 3, length=N)
+data <- data.frame( 
+  x = c(x.grid, x.grid),
+  y = c(dnorm(x.grid), dt(x.grid, df)),
+  type = c( rep('Normal',N), rep('T',N) ) )
+
+# make a nice graph
+myplot <- ggplot(data, aes(x=x, y=y, color=type, linetype=type)) +
+  geom_line() +
+  labs(title = paste('Std Normal vs t with', df, 'degrees of freedom'))
+
+# actually print the nice graph we made
+print(myplot) 
+```
     
-    a)  We can simulate rolling two 6-sided dice using the `sample()` function
-        with the `replace=TRUE` option. Read the help file on `sample()` to see
-        how to sample from the numbers $1,2,\dots,6$. Sum those two die rolls 
-        and save it as `throw`.
-    b)  Write a `for{}` loop that wraps your code from part (a) and then tests
-        if any of the throws of dice summed to 12. Read the help files for the
-        functions `any()` and `all()`. Your code should look something
-        like the following:
-        ```{r, eval=FALSE}
-        throws <- NULL
-        for( i in 1:24 ){
-          throws[i] <- ??????  # Your part (a) code goes here
-        }
-        game <- any( throws == 12 ) # Gives a TRUE/FALSE value
-        ```
-    c) Wrap all of your code from part (b) in *another* `for(){}` loop that you run
-        10,000 times. Save the result of each game in a `games` vector that will
-        have 10,000 elements that are either TRUE/FALSE depending on the outcome
-        of that game. You'll need initiallize the `games` vector to NULL and 
-        modify your part (b) code to save the result into some location in the 
-        vector `games`.
-    d)  Finally, calculate win percentage by taking the average of the `games` vector.
+**a)** Use a `for` loop to create similar graphs for degrees of freedom $2,3,4,\dots,29,30$. 
+    
+**b)** In retrospect, perhaps we didn't need to produce all of those. Rewrite your loop so that we only produce graphs for $\left\{ 2,3,4,5,10,15,20,25,30\right\}$ degrees of freedom. *Hint: you can just modify the vector in the `for` statement to include the desired degrees of freedom.*
+
+### Exercise 4 {-}
+
+It is very common to run simulation studies to estimate probabilities that are difficult to work out. In this exercise we will investigate a gambling question that sparked much of the fundamental mathematics behind the study of probability.
+    
+The game is to roll a pair of 6-sided dice 24 times. If a "double-sixes" comes up on any of the 24 rolls, the player wins. What is the probability of winning?
+
+**a)**  We can simulate rolling two 6-sided dice using the `sample()` function with the `replace=TRUE` option. Read the help file on `sample()` to see how to sample from the numbers $1,2,\dots,6$. Sum those two die rolls and save it as `throw`.
+
+**b)**  Write a `for{}` loop that wraps your code from part (a) and then tests if any of the throws of dice summed to 12. Read the help files for the functions `any()` and `all()`. Your code should look something like the following:
+
+```{r, eval=FALSE}
+throws <- NULL
+for( i in 1:24 ){
+  throws[i] <- ??????  # Your part (a) code goes here
+}
+game <- any( throws == 12 ) # Gives a TRUE/FALSE value
+```
+
+**c)** Wrap all of your code from part (b) in *another* `for(){}` loop that you run 10,000 times. Save the result of each game in a `games` vector that will have 10,000 elements that are either TRUE/FALSE depending on the outcome of that game. You'll need initiallize the `games` vector to NULL and modify your part (b) code to save the result into some location in the vector `games`.
+
+**d)** Finally, calculate win percentage by taking the average of the `games` vector.

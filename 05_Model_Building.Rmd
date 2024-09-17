@@ -1,7 +1,7 @@
 # Statistical Models
 
 ```{r, echo=FALSE}
-# Unattach any packages that happen to already be loaded. In general this is unecessary
+# Unattach any packages that happen to already be loaded. In general this is unnecessary
 # but is important for the creation of the book to not have package namespaces
 # fighting unexpectedly.
 pkgs = names(sessionInfo()$otherPkgs)
@@ -133,7 +133,7 @@ To be clear of the results of the testing of GPA by Gender, the resulting t-test
 
 #### Paired t-tests
 
-In a paired t-test, there is some mechanism for pairing observations in the two categories. For example, perhaps we observe the maximum weight lifted by a strongman competitor while wearing a weight belt vs not wearing the belt. Then we look at the difference between the weights lifted for each athlete. In the example we'll look at here, we have the ages of 100 randomly selected married heterosexual couples from St. Lawerence County, NY. For any given man in the study, the obvious woman to compare his age to is his wife's. So a paired test makes sense to perform. Below we do our usual steps of loading data and doing a brief exploratory analysis via a scatter graph of the Husaand and Wife ages.
+In a paired t-test, there is some mechanism for pairing observations in the two categories. For example, perhaps we observe the maximum weight lifted by a strongman competitor while wearing a weight belt vs not wearing the belt. Then we look at the difference between the weights lifted for each athlete. In the example we'll look at here, we have the ages of 100 randomly selected married heterosexual couples from St. Lawerence County, NY. For any given man in the study, the obvious woman to compare his age to is his wife's. So a paired test makes sense to perform. Below we do our usual steps of loading data and doing a brief exploratory analysis via a scatter graph of the Husband and Wife ages.
 
 ```{r, fig.height=3}
 data('MarriageAges', package='Lock5Data')
@@ -234,13 +234,13 @@ head(iris)
 
 What we would like to do here is attach new columns to this data frame that relate to the resulting model. For this example we will want to attach the $95\%$ confidence interval, which commonly has three parts: 1) `fit` or `fitted.`, 2) `lwr` or `.lower` and 3) `upr` or `.upper`. The `fit` column refers the the *best-fit line*, or the expected value of the model without noise. You know this best as 'the line that runs through the center of the data'. The confidence interval is then extracted in two parts: `upr` referring to the upper point of the interval and `lwr` referring to the lower point of the interval.
 
-Lets first use the `broom` package to calcualte this inforation using the `augment()` function. The `augment()` function takes the resulting model, along with the original data frame, and outputs a new data frame with the model information attached.
+Lets first use the `broom` package to calculate this information using the `augment()` function. The `augment()` function takes the resulting model, along with the original data frame, and outputs a new data frame with the model information attached.
 
 ```{r}
 broom::augment(model.iris, iris, interval='confidence') %>% head()
 ```
 
-Notice I am starting to get a bit trickier with my syntax, and as to not explode our screen with data output, I piped to a `head()` to show only the first 6 rows. Observe that the `augment()` function includes all the information from the original `iris` data set, but now also includes columns for the best-fit line and confidence intervals. If `augment()` has one negative, it might be that it provides too many new columns, each has relevance in a statistical analysis, but for now, we have little use for the `.resid`, `.hat`, `.sigma`, `.coodsd`, and `.std.resid` columns. Just know that each of these is important in diagnosing the 'goodness' of the model.
+Notice I am starting to get a bit trickier with my syntax, and as to not explode our screen with data output, I piped to a `head()` to show only the first 6 rows - remember this does not save the desired result to an object so I cannot use this information for later calculations! Observe that the `augment()` function includes all the information from the original `iris` data set, but now also includes columns for the best-fit line and confidence intervals. If `augment()` has one negative, it might be that it provides too many new columns, each has relevance in a statistical analysis, but for now, we have little use for the `.resid`, `.hat`, `.sigma`, `.coodsd`, and `.std.resid` columns. Just know that each of these is important in diagnosing the 'goodness' of the model.
 
 We could gather the same information using base R commands through the `predict()` function. It is important to introduce the `predict()` function as this shows up in a variety of manners within statistical modeling. We can calculate the information for the confidence interval using the following:
 
@@ -248,7 +248,7 @@ We could gather the same information using base R commands through the `predict(
 predict(model.iris, interval='confidence') %>% head()
 ```
 
-Notice though that predict doesn't immediately attach the data to the original data frame. To attach the results of the confidence interval and best-fit line to the original iris data, we need to use some `dplyr` tools. The code below removes any previously attached `fit`, `lwr`, and `upr` columns, then binds on new columns based on the output of `predict()`.  This is two steps to obtain the same information as the `augment()` command above, but can be done seemlessly in a pipeline.
+Notice though that predict doesn't immediately attach the data to the original data frame. To attach the results of the confidence interval and best-fit line to the original iris data, we need to use some `dplyr` tools. The code below removes any previously attached `fit`, `lwr`, and `upr` columns, then binds on new columns based on the output of `predict()`.  This is two steps to obtain the same information as the `augment()` command above, but can be done seamlessly in a pipeline.
 
 ```{r}
 # Remove any previous model prediction values that I've added,
