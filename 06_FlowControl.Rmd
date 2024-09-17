@@ -1,7 +1,7 @@
-# Flow Control
+# Flow & Control
 
 ```{r, echo=FALSE}
-# Un-attach any packages that happen to already be loaded. In general this is unecessary
+# Un-attach any packages that happen to already be loaded. In general this is not necessary
 # but is important for the creation of the book to not have package namespaces
 # fighting unexpectedly.
 pkgs = names(sessionInfo()$otherPkgs)
@@ -28,8 +28,6 @@ suppressPackageStartupMessages({
 ```
 
 Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/bPZKP_yYFLo).
-
-**This chapter is currently being edited!!**
 
 ## Control and Flow
 
@@ -516,9 +514,7 @@ print(myplot)
 
 ### Exercise 4 {-}
 
-It is very common to run simulation studies to estimate probabilities that are difficult to work out. In this exercise we will investigate a gambling question that sparked much of the fundamental mathematics behind the study of probability.
-    
-The game is to roll a pair of 6-sided dice 24 times. If a "double-sixes" comes up on any of the 24 rolls, the player wins. What is the probability of winning?
+It is very common to run simulation studies to estimate probabilities that are difficult to work out. The game is to roll a pair of 6-sided dice 24 times. If a "double-sixes" comes up on any of the 24 rolls, the player wins. What is the probability of winning?
 
 **a)**  We can simulate rolling two 6-sided dice using the `sample()` function with the `replace=TRUE` option. Read the help file on `sample()` to see how to sample from the numbers $1,2,\dots,6$. Sum those two die rolls and save it as `throw`.
 
