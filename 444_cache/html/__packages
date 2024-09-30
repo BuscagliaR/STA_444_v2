@@ -14,3 +14,5 @@ ggformula
 mosaicData
 scales
 ggridges
+readxl
+googlesheets4

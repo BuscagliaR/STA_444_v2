@@ -1,7 +1,6 @@
 # Factors
-
 ```{r, echo=FALSE}
-# Unattach any packages that happen to already be loaded. In general this is unecessary
+# Un-attach any packages that happen to already be loaded. In general this is not necessary
 # but is important for the creation of the book to not have package namespaces
 # fighting unexpectedly.
 pkgs = names(sessionInfo()$otherPkgs)
@@ -14,15 +13,20 @@ if( length(pkgs > 0)){
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
+In this chapter we will learn to handle factors, a key data structure in programming langauges to handled strings within models and analysis in a light-weight and flexible manner.  The chapter primarily leverages the functionality within the `forcats` package of the `tidyverse` suite.
+
 ```{r, eval=FALSE}
+library(forcats)
 library(tidyverse)
 ```
+
 
 ```{r, message=FALSE, warning=FALSE, results='hide', include=FALSE}
 suppressPackageStartupMessages({
   library(tidyverse, quietly = TRUE)   # loading ggplot2 and dplyr
 })
 ```
+
 **This chapter is currently being edited!!**
 
 Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/ID2hx2ySAEE).
@@ -58,8 +62,6 @@ We will be interested in the following broad classes of manipulations:
 | Manually select categories to collapse into one |  `fct_collapse(f, other = c('a','b')) ` |
 | Add a new factor level                          | `fct_expand(f, 'new level')`            |
 | Remove level(s) that don't occur in the data    | `fct_drop(f)`                           |
-
-
 
 ## Creation and Structure
 
