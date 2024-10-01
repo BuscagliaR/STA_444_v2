@@ -26,8 +26,6 @@ suppressPackageStartupMessages({
 })
 ```
 
-**CHAPTER IS STILL BEING EDITED**
-
 In the introduction section of these notes, we concentrated on data frames which we created and manipulated using `dplyr`. There are other data structures that are used in R and it is useful to learn how to manipulate those other data structures. Furthermore, it is also useful to be able to use base R functionality to do certain manipulations on a data frame. This chapter will cover manipulation of different data structures within R, using both some tidyverse functionality and base R tools.
 
 ## Vectors {#DataStructures_Vectors}
@@ -124,7 +122,7 @@ x + y
 x * y
 ```
 
-But if we wished to take the inner-product, a common linear algebra calculation, we would need to use the `%*%` structure.  This will take the inner-product as defined, by multiplying each corresponding element, summing all products, and returning a scalar, which in R will be a 1x1 matrix.
+But if we wished to take the inner-product, a common linear algebra calculation, we would need to use the `%*%` structure.  This will take the inner-product as returning a scalar, which in R will be a 1x1 matrix.
 
 ```{r}
 x %*% y
@@ -163,7 +161,7 @@ Function       | Result
 Putting this all together, we can easily perform tedious calculations with ease. To demonstrate how scalars, vectors, and functions of them work together, we will calculate the variance of 5 numbers. Recall that sample variance ($s^2$) is defined as
 
 $$
-s^2_x=\frac{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}}{n-1}
+s^2_x=\frac{\sum\limits_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}}{n-1}
 $$
 
 Here are some common statistical calculations one might do in an STA 270 or STA 570 course:
@@ -199,15 +197,15 @@ W <- matrix( c(1,2,3,4,5,6), nrow=2, ncol=3)
 W
 ```
 
-Notice that because we only gave it six values, the information the number of columns is redundant and could be left off and R would figure out how many columns are needed.  Next notice that the order that R chose to fill in the matrix was to fill in the first column then the second, and then the third. If we wanted to fill the matrix in order of the rows first, then we'd use the optional `byrow=TRUE` argument.
+Notice that because we only gave it six values, the information the number of columns is redundant and could be left off and R would figure out how many columns are needed. Next notice that the order that R chose to fill in the matrix was to fill in the first column then the second, and then the third. If we wanted to fill the matrix in order of the rows first, then we'd use the optional `byrow=TRUE` argument.
 
 ```{r}
 W <- matrix( c(1,2,3,4,5,6), nrow=2, byrow=TRUE )
 W
 ```
 
+The alternative to the `matrix()` command is we could create two columns as individual vectors and just push them together. Or we could have made three rows and lump them by rows instead. To do this we'll use a group of functions that bind vectors together. To join two column vectors together, we'll use `cbind` and to bind rows together we'll use the `rbind` function 
 
-The alternative to the `matrix()` command  is we could create two columns as individual vectors and just push them together. Or we could have made three rows and lump them by rows instead. To do this we'll use a group of functions that bind vectors together. To join two column vectors together, we'll use `cbind` and to bind rows together we'll use the `rbind` function 
 ```{r}
 a <- c(1,2,3)
 b <- c(4,5,6)
@@ -215,8 +213,7 @@ cbind(a,b)  # Column Bind:  a,b are columns in resultant matrix
 rbind(a,b)  # Row Bind:     a,b are   rows  in resultant matrix    
 ```
 
-
-Notice that doing this has provided R with some names for the individual rows and columns. I can change these using the commands `colnames()` and `rownames()`. 
+Notice that doing this has provided R with some names for the individual rows and columns. I can change these using the commands `colnames()` and `rownames()`.
 
 ```{r}
 M <- matrix(1:6, nrow=3, ncol=2, byrow=TRUE) 
@@ -224,8 +221,6 @@ colnames(M) <- c('Column1', 'Column2')       # set column labels
 rownames(M) <- c('Row1', 'Row2','Row3')      # set row labels
 M
 ```
-
-This is actually a pretty peculiar way of setting the *attributes* of the object `M` because it looks like we are evaluating a function and assigning some value to the function output.  Yes it is weird, but R was developed in the 70s and it seemed like a good idea at the time.
 
 Accessing a particular element of a matrix is done in a similar manner as with vectors, using the `[ ]` notation, but this time we must specify which row and which column. Notice that this scheme always is `[row, col]`.
 
@@ -236,7 +231,6 @@ M1[1,2]     # Grab row 1, column 2 value
 M1[1, 1:2]  # Grab row 1, and columns 1 and 2.
 ```
 
-
 I might want to grab a single row or a single column out of a matrix, which is sometimes referred to as taking a slice of the matrix. I could figure out how long that vector is, but often I'm too lazy. Instead I can just specify the specify the particular row or column I want.
 
 ```{r}
@@ -244,7 +238,6 @@ M1
 M1[1, ]    # grab the 1st row 
 M1[ ,2]    # grab second column (the spaces are optional...)
 ```
-
 
 ## Data Frames {#DataStructures_DataFrames}
 
@@ -273,7 +266,7 @@ Because a data frame feels like a matrix, R also allows matrix notation for acce
 `[a,]`    |  All of row `a`
 `[,b]`    |  All of column `b`
 
-Because the columns have meaning and we have given them column names, it is desirable to want to access an element by the name of the column as opposed to the column number. In large Excel spreadsheets I often get annoyed trying to remember which column something was in and muttering “Was total biomass in column P or Q?” A system where I could just name the column `Total.Biomass` and be done with it is much nicer to work with and I make fewer dumb mistakes.
+Because the columns have meaning and we have given them column names, it is desirable to want to access an element by the name of the column as opposed to the column number. A large Excel spreadsheet can get annoying recalling which column something was in. “Was total biomass in column P or Q?” A system where the name is used to define the column `Total.Biomass` is much nicer to work with and helps make fewer mistakes.
 
 ```{r}
 data$Name       # The $-sign means to reference a column by its label
@@ -285,7 +278,6 @@ I can mix the `[ ]` notation with the column names. The following is also accept
 ```{r}
 data[, 'Name']   # Grab the column labeled 'Name'
 ```
-
 
 The next thing we might wish to do is add a new column to a preexisting data frame. There are two ways to do this. First, we could use the `cbind()` function to bind two data frames together. Second we could reference a new column name and assign values to it.
 
@@ -306,8 +298,8 @@ Data frames are also very restrictive in that the shape of the data must be rect
 data$Score4 <- c(1,2)
 ```
 
-
 ### `data.frames` vs `tibbles` {#DataStructures_Tibbles}
+
 Previously we've been using `data.frame` and `tibble` objects interchangeably, but now is a good time make a distinction. Essentially a `tibble` is a `data.frame` that does more type checking and less coercion during creation and manipulation. So a `tibble` does less (automatically) and complains more. The rational for this is that while coercion between data types can be helpful, it often disguises errors that take a long time to track down. On the whole, is better to force the user to do the coercion explicitly rather than hope that R magically does the right thing.
 
 Second, the printing methods for `tibbles` prevent it from showing too many rows or columns. This is a very convenient and more user-friendly way to show the data. We can control how many rows or columns are printed using the `options()` command, which sets all of the global options.
@@ -332,86 +324,80 @@ example %>% select( `1984`, `Is Awesome` )
 ```
 
 
-### Access via `[ ]` vs `[[ ]]` 
-To grab elements of a data frame, we have been using `[ ]`, which returns the desired rows and columns as a data frame.  If we wanted to force R to return the result as a vector, we could force another layer of de-referencing using the double square bracket notation.
+### Access via `[ ]` vs `[[ ]]`
 
-The way to think of this is that `[]` is the sub-setting function 
-returns the same object structure as you send in (just smaller).
-
-The `[[ ]]` is the extractor function and it will return
-the data structure of whatever you are aiming to extract.
+To grab elements of a data frame, we have been using `[ ]`, which returns the desired rows and columns as a data frame.  If we wanted to force R to return the result as a vector, we could force another layer of de-referencing using the double square bracket notation. The way to think of this is that `[]` is the sub-setting function returns the same object structure as you send in (just smaller). The `[[ ]]` is the extractor function and it will return the data structure of whatever you are aiming to extract.
 
 ```{r}
-data['Name']   # Returns a data frame with just the Name column.
-data[['Name']] # Returns a vector that is the Name column.
-
-# Non-obviously, the following also returns the Name column
-# as a vector. This introduces WAY too much confusion about how
-# [ ] and [[ ]] actually work and I recommend using 
-# dplyr::select() to return a data frame and 
-# dplyr::pull() to return a vector 
-# because these functions guarantee the return format
-# is what you want.
-data[ , 'Name']
+str(data['Name'])   # Returns a data frame with just the Name column.
+str(data[['Name']]) # Returns a vector that is the Name column.
 ```
 
+The tidyverse command `pull()` is also an efficient way to de-reference the structure. Pulling data will result in a vector as well, and can be used in a pipeline. This is a good differentiation from the previously discussed `select()` command, which provides the columns as a data frame.
 
+```{r}
+data %>% select('Name') %>% str()
+data %>% pull('Name') %>% str()
+```
 
 ## Lists {#DataStructures_Lists}
 
-Data frames are quite useful for storing data but sometimes we'll need to store a bunch of different pieces of information and it won't fit neatly as a data frame. The most general form of a data structure is called a list. This can be thought of as a vector of objects where there is no requirement for each element to be the same type of object.
+Data frames are useful for organizing and storing data, but sometimes we need to store diverse pieces of information that don't fit neatly into a data frame. For these cases, we can use a more flexible data structure known as a list. A list can be thought of as a collection (or vector) of objects, where there is no requirement for each element to be of the same type.
 
-Consider that I might need to store information about person. For example, suppose that I want make an object that holds information about my immediate family. This object should have my spouse's name (just one name) as well as my siblings. But because I have many siblings, I want the siblings to be a vector of names. Likewise I might also include my pets, but we don't want any requirement that the number of pets is the same as the number of siblings (or spouses!). 
+For example, let’s say we want to store information about a family. This would include a spouse's name, as well as a list of siblings' names, since someone may have more than one sibling. Additionally, I might want to include information about pets and the age of each pet. The key point is that there’s no requirement for the number of pets to match the number of siblings or spouses—lists allow this kind of flexibility in organizing data.
 
 ```{r}
-wife <- 'Aubrey'
+spouse <- 'Micky'
 sibs <- c('Tina','Caroline','Brandon','John')
 pets <- c('Beau','Tess','Kaylee')
-Derek <- list(Spouse=wife, Siblings=sibs, Pets=pets) # Create the list
-str(Derek) # show the structure of object
+pet.ages <- c(8, 7, 4)
+Family <- list(Spouse=spouse, Siblings=sibs, Pets=pets, Pet.Ages=pet.ages) # Create the list
+str(Family) # show the structure of object
 ```
 
-Notice that the object `Derek` is a list of three elements. The first is the single string containing my wife's name. The next is a vector of my siblings' names and it is a vector of length four. Finally the vector of pets' names is only of length three.
+Notice that the object `Family` is a list of four elements. The first is the single string containing the spouse's name. This is followed by two more vectors of strings, each of different length. Finally attached is a numerical vector. Lists do not require that any level within match.
 
-To access any element of this list we can use an indexing scheme similar to matrices and vectors. 
+Accessing any element of a list uses an indexing scheme similar to matrices and vectors. 
 
 ```{r}
-Derek[  'Pets'  ]   # Return list with just the Pets element
-Derek[[ 'Pets' ]]   # Return element as whatever structure it is
+Family[  'Pets'  ]   # Return list with just the Pets element
+Family[[ 'Pets' ]]   # Return element as whatever structure it is
 ```
 
-Generally, I want to grab the list element as whatever format it was stored and I don't want to keep the list organization structure and I almost always find myself using the double square bracket notation.
+Generally you will want to access a list element as whatever format it was stored and I don't want to keep the list. We can similarly access a list based on a numerical location.
 
 ```{r}
-Derek[[ 1 ]]    # First element of the list is Spouse!
-Derek[[ 3 ]]    # Third element of the list is the vector of pets
+Family[[ 1 ]]    # First element of the list is Spouse!
+Family[[ 3 ]]    # Third element of the list is the vector of pets
 ```
 
-
-There is a second way I can access elements. For data frames it was convenient to use the notation `DataFrame$ColumnName` and we will use the same convention for lists. Actually a data frame is just a list with the requirement that each list element is a vector and all vectors are of the same length. To access my pets names we can use the following notation:
+There is a second way I can access elements. For data frames it was convenient to use the notation `DataFrame$ColumnName` and we will use the same convention for lists. Actually a data frame is just a list with the requirement that each list element is a vector and all vectors are of the same length. To access the pets names we can use the following notation:
 
 ```{r}
-Derek$Pets         # Using the '$' notation
-Derek[[ 'Pets' ]]  # Using the '[[ ]]' notation
+Family$Pets         # Using the '$' notation
 ```
-
 
 To add something new to the list object, we can just make an assignment in a similar fashion as we did for `data.frame` and just assign a value to a slot that doesn't (yet!) exist.
 
 ```{r}
-Derek$Spawn <- c('Elise', 'Casey')
+Family$Kids <- c('Elise', 'Casey')
 ```
-
 
 We can also add extremely complicated items to my list. Here we'll add a `data.frame` as another list element.
 
 ```{r}
 # Recall that we previous had defined a data.frame called "data"
-Derek$RandomDataFrame <- data  # Assign it to be a list element
-str(Derek)
+Family$RandomDataFrame <- data  # Assign it to be a list element
+str(Family)
 ```
 
-Now we see that the list `Derek` has five elements and some of those elements are pretty complicated.  In fact, I could happily have lists of lists and have a very complicated nesting structure.
+Now we see that the list `Family` has six elements and some of those elements are pretty complicated.  It is not uncommon to use lists of lists which have a leveled nesting structure and follow a similar syntax to just a single list.
+
+```{r}
+Family$FamilyNest <- Family # Create a list within a list that conatins all of Familiy
+Family$Spouse # first level list
+Family$FamilyNest$Spouse # second level list
+```
 
 The place that most users will run into lists is that the output of many statistical procedures will return the results in a list object. When a user asks R to perform a regression, the output returned is a list object, and we'll need to grab particular information from that object afterwards. For example, the output from a t-test in R is a list:
 
@@ -421,121 +407,181 @@ results <- t.test(x, alternative='less', mu=5)   # do a t-test
 str(results)                                     # examine the resulting object
 ```
 
+We see that result is actually a list with 10 elements in it. To access the p-value we could use:
 
-We see that result is actually a list with 9 elements in it. To access the p-value we could use:
 ```{r}
 results$p.value
 ```
 
-If I ask R to print the object `results`, it will hide the structure from you and print it in a “pretty” fashion because there is a `print` function defined specifically for objects created by the `t.test()` function.
+We have previously accessed information from models using the `broom` package, but there are many simple native R commands if you need to quickly access information. It is important to be able to explore data objects using the `str()` command shown throughout this chapter. R will often output a simplified object that can mask other important information one may be interested in, or obscures how to access the data. For example, asking R to print the object `results` will hide the complex list structure from the output. Instead, there is an hidden `print` function defined specifically for objects created by the `t.test()` function that output a simple summarized version.
 
 ```{r}
 results
 ```
 
-
-
 ## Exercises  {#Exercises_DataStructures}
-1. Create a vector of three elements (2,4,6) and name that vector `vec_a`. Create a second vector, `vec_b`, that contains (8,10,12). Add these two vectors together and name the result `vec_c`.
 
-2. Create a vector, named `vec_d`, that contains only two elements (14,20). Add this vector to `vec_a`. What is the result and what do you think R did (look up the recycling rule using Google)? What is the warning message that R gives you?
+### Exercise 1 {-}
 
-3. Next add 5 to the vector vec_a. What is the result and what did R do? Why doesn't in give you a warning message similar to what you saw in the previous problem?
+Create a vector of three elements (2,4,6) and name that vector `vec_a`. Create a second vector, `vec_b`, that contains $(8,10,12)$. Add these two vectors together and name the result `vec_c`.
 
-4. Generate the vector of integers $\left\{ 1,2,\dots5\right\}$ in two different ways. 
-    a) First using the `seq()` function 
-    b) Using the `a:b` shortcut.
+### Exercise 2 {-}
 
-5. Generate the vector of even numbers $\left\{ 2,4,6,\dots,20\right\}$ 
-    a) Using the seq() function and 
-    b) Using the a:b shortcut and some subsequent algebra. *Hint: Generate the vector 1-10 and then multiple it by 2*.
+Create a vector, named `vec_d`, that contains only two elements (14,20). Add this vector to `vec_a`. What is the result and what do you think R did (look up the recycling rule using Google)? What is the warning message that R gives you?
 
-6. Generate a vector of 21 elements that are evenly placed between 0 and 1 using the `seq()` command and name this vector `x`. 
+### Exercise 3 {-}
 
-7. Generate the vector $\left\{ 2,4,8,2,4,8,2,4,8\right\}$ 
-  using the `rep()` command to replicate the vector c(2,4,8). 
+Next add $5$ to the vector `vec_a`. What is the result and what did R do? Why doesn't in give you a warning message similar to what you saw in the previous problem?
 
-8. Generate the vector $\left\{ 2,2,2,2,4,4,4,4,8,8,8,8\right\}$
-  using the `rep()` command. You might need to check the help file for rep() to see all of the options that rep() will accept. In particular, look at the optional argument `each=`.
+### Exercise 4 {-}
 
-9. The vector `letters` is a built-in vector to R and contains the lower case English alphabet. 
-    a) Extract the 9th element of the letters vector.
-    b) Extract the sub-vector that contains the 9th, 11th, and 19th elements.
-    c) Extract the sub-vector that contains everything except the last two elements.
+Generate the vector of integers $\left\{ 1,2,\dots5\right\}$ in two different ways.
+
+**a)** First using the `seq()` function
+
+**b)** Using the `a:b` shortcut.
+
+### Exercise 5 {-}
+
+Generate the vector of even numbers $\left\{ 2,4,6,\dots,20\right\}$
+
+**a)** Using the `seq()` function and
+
+**b)** Using the a:b shortcut and some subsequent algebra. *Hint: Generate a sequence of integers then multiple by 2*.
+
+### Exercise 6 {-}
+
+Generate a vector of $21$ elements that are evenly placed between $0$ and $1$ using the `seq()` command and name this vector `x`. 
+
+### Exercise 7 {-}
+
+Generate the vector $\left\{ 2,4,8,2,4,8,2,4,8\right\}$ using the `rep()` command to replicate the vector `c(2,4,8)`. 
+
+### Exercise 8 {-}
+
+Generate the vector $\left\{ 2,2,2,2,4,4,4,4,8,8,8,8\right\}$ using the `rep()` command. You might need to check the help file for `rep()`. In particular, look at the optional argument `each=`.
+
+### Exercise 9 {-}
+
+The vector `letters` is a built-in vector to R and contains the lower case English alphabet.
+
+**a)** Extract the 9th element of the letters vector.
+
+**b)** Extract the sub-vector that contains the 9th, 11th, and 19th elements.
+    
+**c)** Extract the sub-vector that contains everything except the last two elements.
     
 
-10. In this problem, we will work with the matrix 
+### Exercise 10 {-}
 
-    \[ \left[\begin{array}{ccccc}
-    2 & 4 & 6 & 8 & 10\\
-    12 & 14 & 16 & 18 & 20\\
-    22 & 24 & 26 & 28 & 30
-    \end{array}\right]\]
+In this problem, we will work with the matrix 
+
+\[ \left[\begin{array}{ccccc}
+2 & 4 & 6 & 8 & 10\\
+12 & 14 & 16 & 18 & 20\\
+22 & 24 & 26 & 28 & 30
+\end{array}\right]\]
     
-    a) Create the matrix in two ways and save the resulting matrix as `M`.
-        i. Create the matrix using some combination of the `seq()` and `matrix()` commands.
-        ii. Create the same matrix by some combination of multiple `seq()` commands and either the `rbind()` or `cbind()` command. 
+**a)** Create the matrix in two ways and save the resulting matrix as `M`.
 
-    b) Extract the second row out of `M`.
-    c) Extract the element in the third row and second column of `M`.
+  i. Create the matrix using some combination of the `seq()` and `matrix()` commands.
+  
+  ii. Create the same matrix by some combination of multiple `seq()` commands and either the `rbind()` or `cbind()` command. 
 
-11. Create and manipulate a data frame.
-    a) Create a `data.frame` named `my.trees` that has the following columns:
-        + Girth = {8.3, 8.6, 8.8, 10.5, 10.7, 10.8, 11.0}
-        + Height= {70, 65, 63, 72, 81, 83, 66}
-        + Volume= {10.3, 10.3, 10.2, 16.4, 18.8, 19.7, 15.6}
-    b) Without using `dplyr` functions, extract the third observation (i.e. the third row)
-    c) Without using `dplyr` functions, extract the Girth column referring to it by name (don't use whatever order you placed the columns in).
-    d) Without using `dplyr` functions, print out a data frame of all the observations *except* for the fourth observation. (i.e. Remove the fourth observation/row.)
-    e) Without using `dplyr` functions, use the `which()` command to create a vector of row indices that have a `girth` greater than 10. Call that vector `index`.
-    f) Without using `dplyr` functions, use the `index` vector to create a small data set with just the large girth trees.
-    g) Without using `dplyr` functions, use the `index` vector to create a small data set with just the small girth trees.
+**b)** Extract the second row out of `M`.
 
-12. The following code creates a `data.frame` and then has two different methods for removing the rows with `NA` values in the column `Grade`. Explain the difference between the two.
-    ```{r, eval=FALSE}
-    df <- data.frame(name= c('Alice','Bob','Charlie','Daniel'),
-                     Grade = c(6,8,NA,9))
+**c)** Extract the element in the third row and second column of `M`.
+
+### Exercise 11 {-}
+
+Create and manipulate a data frame.
+
+**a)** Create a `data.frame` named `my.trees` that has the following columns:
+
+  + Girth = {8.3, 8.6, 8.8, 10.5, 10.7, 10.8, 11.0}
+  + Height= {70, 65, 63, 72, 81, 83, 66}
+  + Volume= {10.3, 10.3, 10.2, 16.4, 18.8, 19.7, 15.6}
+  
+Complete the following without using `dplyr` functions
+
+**b)** Extract the third observation (i.e. the third row)
+
+**c)** Extract the Girth column referring to it by name (don't use a numerical value based on column position).
+
+**d)** Print out a data frame of all the observations *except* for the fourth observation. (i.e. Remove the fourth observation/row.)
+
+**e)** Use the `which()` command to create a vector of row indices that have a `girth` greater than 10. Call that vector `index`.
+
+**f)** Use the `index` vector to create a small data set with just the large girth trees.
+
+**g)** Use the `index` vector to create a small data set with just the small girth trees.
+
+### Exercise 12 {-}
+
+The following code creates a `data.frame` and then has two different methods for removing the rows with `NA` values in the column `Grade`. Explain the difference between the two.
+
+```{r, eval=FALSE}
+df <- data.frame(name= c('Alice','Bob','Charlie','Daniel'),
+                 Grade = c(6,8,NA,9))
+
+df[ -which(  is.na(df$Grade) ), ]
+df[  which( !is.na(df$Grade) ), ]
+```
     
-    df[ -which(  is.na(df$Grade) ), ]
-    df[  which( !is.na(df$Grade) ), ]
-    ```
-    
-13. Creation of data frames is usually done by binding together vectors while using `seq` and `rep` commands. However often we need to create a data frame that contains all possible combinations of several variables. The function `expand.grid()` addresses this need.
-    ```{r, eval=FALSE}
-    expand.grid( F1=c('A','B'), F2=c('x','w','z'), replicate=1:2 )
-    ```
-    A fun example of using this function is making several graphs of the standard normal distribution versus the t-distribution. Use the `expand.grid` function to create a `data.frame` with all combinations of `x=seq(-4,4,by=.01)`, `dist=c('Normal','t')`, and `df=c(2,3,4,5,10,15,20,30)`. Use the `dplyr::mutate` command with the `if_else` command to generate the function heights `y` using either `dt(x,df)` or `dnorm(x)` depending on what is in the distribution column.
-    ```{r}
-    expand.grid( x=seq(-4,4,by=.01), 
-                 dist=c('Normal','t'), 
-                 df=c(2,3,4,5,10,15,20,30) ) %>%
-      mutate( y = if_else(dist == 't', dt(x, df), dnorm(x) ) ) %>%
-      ggplot( aes( x=x, y=y, color=dist) ) + 
-      geom_line() + 
-      facet_wrap(~df)
-    ```
-    
+### Exercise 13 {-}
 
-14. Create and manipulate a list.
-    a) Create a list named my.test with elements
-        + x = c(4,5,6,7,8,9,10)
-        + y = c(34,35,41,40,45,47,51)
-        + slope = 2.82
-        + p.value = 0.000131
-    b) Extract the second element in the list.
-    c) Extract the element named `p.value` from the list.
+Creation of data frames is usually done by binding together vectors while using `seq` and `rep` commands. However often we need to create a data frame that contains all possible combinations of several variables. The function `expand.grid()` addresses this need.
 
-15. The function `lm()` creates a linear model, which is a general class of model that includes both regression and ANOVA. We will call this on a data frame and examine the results. For this problem, there isn't much to figure out, but rather the goal is to recognize the data structures being used in common analysis functions.
-    a) There are many data sets that are included with R and its packages. One of which is the `trees` data which is a data set of $n=31$ cherry trees. Load this dataset into your current workspace using the command:
-    ```{r}
-    data(trees)     # load trees data.frame
-    ```
-    b) Examine the data frame using the `str()` command. Look at the help file for the data using the command `help(trees)` or `?trees`.
-    c) Perform a regression relating the volume of lumber produced to the girth and height of the tree using the following command
-    ```{r}
-    m <- lm( Volume ~ Girth + Height, data=trees)
-    ```
-    d) Use the str() command to inspect `m`. Extract the model coefficients from this list.
+```{r, eval=FALSE}
+expand.grid( F1=c('A','B'), F2=c('x','w','z'), replicate=1:2 )
+```
+
+A fun example of using this function is making several graphs of the standard normal distribution versus the t-distribution. Use the `expand.grid` function to create a `data.frame` with all combinations of `x=seq(-4,4,by=.01)`, `dist=c('Normal','t')`, and `df=c(2,3,4,5,10,15,20,30)`. Use the `dplyr::mutate` command with the `if_else` command to generate the function heights `y` using either `dt(x,df)` or `dnorm(x)` depending on what is in the distribution column.
+
+```{r}
+expand.grid( x=seq(-4,4,by=.01), 
+             dist=c('Normal','t'), 
+             df=c(2,3,4,5,10,15,20,30) ) %>%
+  mutate( y = if_else(dist == 't', dt(x, df), dnorm(x) ) ) %>%
+  ggplot( aes( x=x, y=y, color=dist) ) + 
+  geom_line() + 
+  facet_wrap(~df)
+```
+    
+### Exercise 14 {-}
+
+Create and manipulate a list.
+
+**a)** Create a list named my.test with elements
+
+  + x = c(4,5,6,7,8,9,10)
+  + y = c(34,35,41,40,45,47,51)
+  + slope = 2.82
+  + p.value = 0.000131
+  
+**b)** Extract the second element in the list.
+
+**c)** Extract the element named `p.value` from the list.
+
+### Exercise 15 {-}
+
+The function `lm()` creates a linear model, which is a general class of model that includes both regression and ANOVA. We will call this on a data frame and examine the results. For this problem, there isn't much to figure out, but rather the goal is to recognize the data structures being used in common analysis functions.
+
+**a)** There are many data sets that are included with R and its packages. One of which is the `trees` data which is a data set of $n=31$ cherry trees. Load this dataset into your current workspace using the command:
+
+```{r}
+data(trees)     # load trees data.frame
+```
+
+**b)** Examine the data frame using the `str()` command. Look at the help file for the data using the command `help(trees)` or `?trees`.
+
+**c)** Perform a regression relating the volume of lumber produced to the girth and height of the tree using the following command
+
+```{r}
+m <- lm( Volume ~ Girth + Height, data=trees)
+```
+
+**d)** Use the `str()` command to inspect `m`. Extract the model coefficients from this list.
 
 
 

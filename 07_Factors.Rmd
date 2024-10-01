@@ -1,4 +1,5 @@
 # Factors
+
 ```{r, echo=FALSE}
 # Un-attach any packages that happen to already be loaded. In general this is not necessary
 # but is important for the creation of the book to not have package namespaces
@@ -26,8 +27,6 @@ suppressPackageStartupMessages({
   library(tidyverse, quietly = TRUE)   # loading ggplot2 and dplyr
 })
 ```
-
-**This chapter is currently being edited!!**
 
 Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/ID2hx2ySAEE).
 
@@ -134,8 +133,8 @@ Students %>%
   ggplot( aes(x=Year, fill=Gender)) + geom_bar() + coord_flip()
 ```
 
-
 ## Reorder Levels
+
 Once the factor labels are set, the next most common thing to do is to rearrange the factors. In our `Students` example, the order is messed up because it chose to order them in the same order that they appear in the data set.  That is not appropriate and in this case, it makes sense to change the order to the chronological order First Year, Sophmore, Junior, Senior.
 
 To change the ordering manually, we use the `fct::relevel()` command. This function takes as many levels as you give it and leaves the unaccounted for levels in the same order as they were.
@@ -165,16 +164,15 @@ Students %>%
   mutate( Year = fct_shift(Year, -1) ) %>%
   ggplot( aes(x=Year, fill=Gender)) + geom_bar() + coord_flip()
 
-# In the order of the most number of records
+# In the order of the counts of each level
 Students %>%
   mutate( Year = fct_infreq(Year) ) %>%
   ggplot( aes(x=Year, fill=Gender)) + geom_bar() + coord_flip()
 
 ```
 
+For a second example data set, consider a September 2019 [poll](https://www.monmouth.edu/polling-institute/reports/monmouthpoll_NH_092419/) from Monmouth University of New Hampshire Democrats and Independents.
 
-For a second example data set, consider a September 2019  [poll](https://www.monmouth.edu/polling-institute/reports/monmouthpoll_NH_092419/) 
-from Monmouth University of New Hampshire Democrats and Independents.
 ```{r}
 Dems <- tribble(
   ~Candidate, ~Percent, ~AgeOnElection,
@@ -193,8 +191,8 @@ Dems <- tribble(
 'Undecided',	9, NA)
 ```
 
-
 We now want to first arrange the 2020 Democratic candidates for US president by their support.
+
 ```{r}
 # Reorder Candidates based on the polling percent. The order of Smallest to largest 
 # results in 'No one' at the bottom and Elizabeth Warren at the top. 
@@ -203,7 +201,8 @@ Dems %>%
   ggplot( aes(x=Candidate, y=Percent)) + geom_col() + coord_flip()
 ```
 
-We might consider moving the `Other` and `Undecided` categories as the first categories before "No one". 
+We might consider moving the `Other` and `Undecided` categories to below "No one". 
+
 ```{r}
 Dems %>%
   mutate( Candidate = fct_reorder(Candidate, Percent) ) %>%
@@ -212,8 +211,8 @@ Dems %>%
   ggplot( aes(x=Candidate, y=Percent)) + geom_col() + coord_flip()
 ```
 
-
 ## Add or subtract Levels
+
 Often we find that it is necessary to collapse several categories into one. In the Democratic candidate example, we might want to collapse `No one`, `Other` and `Undecided` into a single `Other` category.
 
 ```{r}
@@ -230,22 +229,16 @@ Dems %>%
   ggplot( aes(x=Candidate, y=Percent)) + geom_col() + coord_flip()
 ```
 
-
-*I need to add the case where we are updating a column of factors and we want to replace a single observation's level with another.  To do this we do something like this:*
-```{r}
-data <- data.frame( Name=c('Alice','Bruce','Charlie'), Grade = c('A','B','B') ) %>%
-  mutate( Grade = factor(Grade) ) %>%
-  mutate( Grade = fct_expand(Grade, 'C')) %>%
-  mutate( Grade = if_else(Name == 'Charlie', factor('C', levels=levels(Grade)), Grade ) )
-data  
-```
-
-*The key idea is that both the TRUE and the FALSE outputs have to have the same type (which is a factor), and both factors have to have a compatible set of levels.*
-
 ## Exercises  {#Exercises_Factors}
 
-1. In the package `Lock5Data` there is a dataset `FloridaLakes` that contains water sample measurements from 53 lakes in Florida. Produce a bar graph that shows the `Lake` and `AvgMercury` variables, and make sure that the lakes are ordered by Average Mercury content. _To fix the issue of lake labels being squished together, you could rotate the labels using a `+ theme(axis.text.x = element_text(angle = 90, hjust = 1))` or flipping the coordinate axes. However, you'll likely want to resize the figure so the labels aren't so squished. the chunk options `fig.height` and `fig.width` control the size of the resulting figure._
+### Exercise 1 {-} 
 
-2. In the package `Lock5Data`, there is a dataset `FootballBrain` that has brain measurements for 75 individuals. The `Group` variable has three levels: `Control` is somebody that did not play football, `FBNoConcuss` is a football player with no history of concussions, or `FBConcuss` which is a football player with concussion history. The variable `Cogniton` measures their testing composite reaction time score. Change the `Group` labels to something that would make sense to a reader and create a box-plot graph of the groups vs cognition. *Because there is no data for the `Control` group, don't show it on your graph. Also notice that the original data set column name misspells "cognition".*
+In the package `Lock5Data` there is a data set `FloridaLakes` that contains water sample measurements from $53$ lakes in Florida. Produce a bar graph that shows the `Lake` and `AvgMercury` variables, and make sure that the lakes are ordered by Average Mercury content. _To fix the issue of lake labels being squished together, you could rotate the labels using a `+ theme(axis.text.x = element_text(angle = 90, hjust = 1))` or flipping the coordinate axes. However, you'll likely want to resize the figure so the labels aren't so squished. the chunk options `fig.height` and `fig.width` control the size of the resulting figure._
 
-3. In the package `Lock5Data`, there is a dataset `RestaurantTips` that gives tip data from the restaurant First Crush Bistro in Potsdam, NY. Make all necessary modifications to the `Day` variable so that subsequent graphs and tables are labeled in a professional manner. Do a similar modification to the `Credit` variable. Graph the `Bill` versus the `PctTip` for each `Day` of the week where we use `Day` as the variable to facet_grid or facet_wrap on. Also include information about if the bill was paid via credit card or cash.
+### Exercise 2 {-} 
+
+In the package `Lock5Data`, there is a data set `FootballBrain` that has brain measurements for 75 individuals. The `Group` variable has three levels: `Control` is somebody that did not play football, `FBNoConcuss` is a football player with no history of concussions, or `FBConcuss` which is a football player with concussion history. The variable `Cogniton` measures their testing composite reaction time score. Change the `Group` labels to something that would make sense to a reader and create a box-plot graph of the groups vs cognition. *Because there is no data for the `Control` group, don't show it on your graph. Also notice that the original data set column name misspells "cognition".*
+
+### Exercise 3 {-} 
+
+In the package `Lock5Data`, there is a data set `RestaurantTips` that gives tip data from the restaurant First Crush Bistro in Potsdam, NY. Make all necessary modifications to the `Day` variable so that subsequent graphs and tables are labeled in a professional manner. Do a similar modification to the `Credit` variable. Graph the `Bill` versus the `PctTip` for each `Day` of the week where we use `Day` as the variable to facet_grid or facet_wrap on. Also include information about if the bill was paid via credit card or cash.

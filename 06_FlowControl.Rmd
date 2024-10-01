@@ -422,9 +422,9 @@ The R function `dunif()` evaluates this density function for the above defined v
     
 ```{r}
 a <- 4      # The min and max values we will use for this example
-b <- 10     # Could be anything, but we need to pick something
+b <- 6     # Could be anything, but we need to pick something
     
-x <- runif(n=1, 0,10)  # one random value between 0 and 10
+x <- runif(n=1,0,10)  # one random value between 0 and 10
 
 # what is value of f(x) at the randomly selected x value?  
 dunif(x, a, b)
@@ -436,8 +436,8 @@ We will write a sequence of statements that utilizes if statements to appropriat
 
 ```{r, eval=FALSE}
 a <- 4
-b <- 10
-x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+b <- 6
+x <- runif(n=1,0,10)  # one random value between 0 and 10
         
 if( x < a ){
   result <- ????      # Replace ???? with something appropriate!
@@ -456,7 +456,9 @@ Replace the `????` with the appropriate value, either 0 or $1/\left(b-a\right)$.
 *i.* 
   
 ```{r, eval=FALSE}
-x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+a <- 4
+b <- 6
+x <- runif(n=1,0,10)  # one random value between 0 and 10
 if( (a<=x) ??? (x<=b) ){
   result <- 1/(b-a)
   }else{
@@ -468,7 +470,9 @@ print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
 *ii.*
   
 ```{r, eval=FALSE}
-x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+a <- 4
+b <- 6
+x <- runif(n=1,0,10)  # one random value between 0 and 10
 if( (x<a) ??? (b<x) ){
   result <- 0
   }else{
@@ -480,7 +484,9 @@ print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
 *iii.*
 
 ```{r, eval=FALSE}
-x <- runif(n=1, 0,10)  # one random value between 0 and 10 
+a <- 4
+b <- 6
+x <- runif(n=1,0,10)  # one random value between 0 and 10
 result <- ifelse( a<=x & x<=b, ???, ??? )
 print(paste('x=',round(x,digits=3), '  result=', round(result,digits=3)))
 ```
