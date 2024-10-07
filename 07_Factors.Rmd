@@ -14,7 +14,7 @@ if( length(pkgs > 0)){
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
-In this chapter we will learn to handle factors, a key data structure in programming langauges to handled strings within models and analysis in a light-weight and flexible manner.  The chapter primarily leverages the functionality within the `forcats` package of the `tidyverse` suite.
+In this chapter we will learn to handle factors, a key data structure in programming languages to handled strings within models and analysis in a light-weight and flexible manner.  The chapter primarily leverages the functionality within the `forcats` package of the `tidyverse` suite.
 
 ```{r, eval=FALSE}
 library(forcats)
@@ -86,7 +86,7 @@ Whenever we do anything that sorts on this factor, the order of the labels in th
 
 ## Change Labels
 
-To demonstrate the `forcats` functions, we will consider two data sets. The first consists of a data set of a small US highschool with observations for each student that record their year and gender.
+To demonstrate the `forcats` functions, we will consider two data sets. The first consists of a data set of a small US high school with observations for each student that record their year and gender.
 
 ```{r, fig.height=3}
 Students <- 
@@ -135,7 +135,7 @@ Students %>%
 
 ## Reorder Levels
 
-Once the factor labels are set, the next most common thing to do is to rearrange the factors. In our `Students` example, the order is messed up because it chose to order them in the same order that they appear in the data set.  That is not appropriate and in this case, it makes sense to change the order to the chronological order First Year, Sophmore, Junior, Senior.
+Once the factor labels are set, the next most common thing to do is to rearrange the factors. In our `Students` example, the order is messed up because it chose to order them in the same order that they appear in the data set.  That is not appropriate and in this case, it makes sense to change the order to the chronological order First Year, Sophomore, Junior, Senior.
 
 To change the ordering manually, we use the `fct::relevel()` command. This function takes as many levels as you give it and leaves the unaccounted for levels in the same order as they were.
 

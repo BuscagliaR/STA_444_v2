@@ -1,0 +1,347 @@
+# Directories and Data Sources
+
+```{r, echo=FALSE}
+# Un-attach any packages that happen to already be loaded. In general this is unnecessary
+# but is important for the creation of the book to not have package namespaces
+# fighting unexpectedly.
+pkgs = names(sessionInfo()$otherPkgs)
+if( length(pkgs > 0)){
+  pkgs = paste('package:', pkgs, sep = "")
+  for( i in 1:length(pkgs)){
+    detach(pkgs[i], character.only = TRUE, force=TRUE)
+  }
+}
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)      # Our usual data manipulation tools
+library(readxl)         # For reading MS Excel files
+library(googlesheets4)  # For reading Google Sheets
+```
+
+Reading data from external sources is necessary. It is most common for data to be provided in a data frame like storage, such as a MS Excel workbook, so we will concentrate on reading data into a `data.frame` structure. 
+
+In the typical way data is organized, we think of each column of data representing some trait or variable that we might be interested in. In general, we might wish to investigate the relationship between variables. In contrast, the rows of our data represent a single object on which the column traits are measured. In a grade book for recording students scores throughout the semester, their is one row for every student and columns for each assignment. A greenhouse experiment data set will have a row for every plant and columns for treatment type and biomass. Our goal is to import data from the provided source and perform data cleaning such that the data is prepared for future steps, such as graphing, modeling, or other data-centric procedures.
+
+## Working directory
+
+One concept that will be important is to recognize that every time you start up RStudio, it picks an appropriate working directory. This is the directory where it will first look for script files or data files. By default when you the working directory is set to the user's home directory on the computer. On windows this is typically something like 'C:/Users/Name' and on Macs '~'. Importantly, when you work with an Rmarkdown file or within an R project file, the working directory is set to the location where the file is stored. This is a useful shortcut for RMD files since we can place all auxiliary files within the same directory as the RMD and no longer have to worry about pathing. Regardless of file types or project setup, one can always set the working directory explicitly using the built in R GUI tools `Session -> Set Working Directory...`.
+
+The functions that we will use in this chapter all accept a character string that denotes the location of the file. This location could be a web address, it could be an absolute path on your computer, or it could be a path relative to the location of your Rmarkdown file.
+
++---------------------------------+--------------------------------------------------------------+
+| `'MyFile.csv'`                  | Look in the working directory for `MyFile.csv`.              |
++---------------------------------+--------------------------------------------------------------+
+| `'data/Myfile.csv'`             | In the working directory, there is a sub-directory           |
+|                                 | called `data` and inside that folder there is                |
+|                                 | a filed called `MyFile.csv`.                                 |
++---------------------------------+--------------------------------------------------------------+
+| `'./data/Myfile.csv'`           | In the working directory, there is a sub-directory           |
+|                                 | called `data` and inside that folder there is                |
+|                                 | a filed called `MyFile.csv`.  The `./` is indicating         |
+|                                 | The current working directory explicitly instead of          |
+|                                 | implicitly.                                                  |
++---------------------------------+--------------------------------------------------------------+
+| `'../Project2/data/Myfile.csv'` | From the current working directory, go *UP* one              |
+|                                 | directory level. In that folder there is a folder            |
+|                                 | called `Project2` which in turn has a `data`                 |
+|                                 | directory, and inside that folder there is                   |
+|                                 | a filed called `MyFile.csv`.  The `../` is indicating        |
+|                                 | to go UP.                                                    |
++---------------------------------+--------------------------------------------------------------+
+| `'~/NAU/Research/data.csv'`     | In Unix based operating systems (which includes MacOSX),     |
+|                                 | a `~` denotes the user's home directory. So this path        |
+|                                 | is from my home directory, to a sub-directory `NAU` which    |
+|                                 | has a Research sub-directory.                                |
++---------------------------------+--------------------------------------------------------------+
+
+It is highly recommend to use relative paths for specifying data import so that the paths are not broken when you share your code with your collaborators or organize your directories to group your work. For example, if I were to specify the path `~/NAU/Research/deHeer/data-raw/FitKids.xls`, then when I share my folder with Dr. deHeer's graduate student (who works on a PC), the path won't work. But if I code the path as `data-raw/FitKids.xls` and the Rmarkdown document lives in the same directory as the `data-raw` folder, then we are set and I can share the `deHeer` folder and everything will work regardless of who is running the code.
+
+### Creating R Projects
+
+Now is a great time of the semester to start organizing your file structures more. One excellent way to do this is to begin create *R Projects* that allow our work to be stored in a single directory associated with a particular coding project. To create an R project one can use the R interface and mouse click to `File -> New Project`. This will in turn open a New Project Wizard that allows you to select options.  This includes the working directory where it is suggested to make a *New Directory* if creating a fresh project, although you can path to an *Existing Directory* if you have already begun the work. Once you choose the type of directory, you will be prompted with the *Project Type*. There are many types of projects you may work on throughout your career and in this course we will study how to build an *R Package*. However, you might notice some really neat elements like *Shiny Applications* or *Quarto Website*, which are advanced topics outside of the scope of this course.  If you scroll far enough, you will even find the option *Book project using bookdown*, which is how this online textbook was built!
+
+For now, we want to focus on a basic R project and select the option *New Project*. With the type of project selected, we are now prompted to name the project an provide a location for our project to live on our local machines. If you are following this text, I would highly recommend creating a New Project called something like **STA_445_Labs**. The naming convention is fairly flexible and should help you remember what work is being done in that project.  For example, as the second edition of this book is being worked on, my project folder has the name **STA_444_v2**, so that I can always properly distinguish it from Dr. Sonderegger's first edition. After providing the name, provide the location you would like the project working directory to be found. Again, it is strongly encouraged to begin creating a good folder system for organized work. My projects are all typically hosted on `GitHub`, so I always place my projects under a working directory, within a few other sub folders, named `GitHub_Repos`. This way I always know where to locate my projects, including important research work that gets hosted on GitHub through an R-Package Project.  When finished, choose `Create Project` and a new session of R will open.
+
+To know that you are in a project environment, view the upper right corner of your R Studio environment. You should see the name of the project you are working in, and this area can be clicked to selected different projects, or close the project environment all together. Once in the project environment, you can create sub-directory folders, such as `data-raw`, `data`, `images`, `scripts`, and so forth to organize your work, data, and output. To then ensure that all pathing is correct, even when shared across labs or through organizations like `GitHub`, you can create pathing structures like `data-raw/reallyrawdata.csv`, which will be easily loaded by anyone who is given access to the project folder. One last note before moving on, is that if you go to the directory on your computer, you will see a new file type called `.Rproj`.  This is the project environment you have created, can be shared with others, and will ensure that all working directories, paths, and items within are shared consistently across working groups.  This is a great way to share work across a broad range of individuals.  In my case, I might start a project, share with a student, who then does work that is passed to a practitioner, and inevitably, this work lives on `GitHub` where others can download the same project folder and structure, and make changes they feel are important to the project.
+
+*At this time I would encourage - try making a project environment for this class, create different folder structures for assignments, and start using the power of R projects to improve your efficiency and ease-of-access to continued work. This will provide a one-stop-shop for all the work you've done in this class, is a structure you could host on a GitHub page, and will help you with the smaller details that often confuse students when we begin to build our own R-Packages.*
+
+### Recommended Project Folder Structure
+
+When working with many projects and collaborators, it is useful to have a "standard" project directory structure so that everybody knows where certain project components should be located.
+
+| Folder   |  Description                               |
+|--------------:|:-----------------------------------------------|
+| `'data-raw'` | This directory has the raw data such as excel and csv files. It also contains scripts that import and wrangle the data in order to produce a clean data file. |
+| `'data'` | This directory contains the cleaned up data in the form of `.rda` files. |
+| `'docs'` | This directory contains all the Rmarkdown files that will generate reports and analysis summaries using the clean data. |
+
+## R Binary Files
+
+R objects have a file representation that allow for saving and loading that respects things like factor sort orders. These files are portable across all R platforms and the structure is open-source and many other programs can import this format.
+
+| Suffix   |  Description                             |
+|--------------:|:-----------------------------------------|
+|`.rda` or `.RData`  | One or more data objects. I prefer the `.RData` suffix as it is more descriptive, but unfortunately some operating systems don't like the long suffix, so the `.rda` suffix is preferred.  |
+|`.rds`    | A single R data object. I don't recommend using this because it is unnecessary to have whole different suffix just to distinguish between a single object verse multiple objects.   |
+|`.rdx` and `.rdb` | A combination of files that is used when a package supports *Lazy Loading*. These should used primarily for packages with wide spread use. |
+
+For a given R object or objects, the function `save()` will save the objects into a `.rda` file which can be subsequently loaded using the `load()` command.
+
+```{r, eval=FALSE}
+# In the data-raw directory, I might have script `Clean.R` that
+# imports and cleans data. At the end of that script, I would save
+# the file into the project data director
+save(trees, file = 'data/trees.rda')      # If working directory is the project
+save(trees, file = '../data/trees.rda')   # If working directory is data-raw
+```
+
+Generally I'll have my the scripts that generate an analysis first import the cleaned up data
+
+```{r, eval=FALSE}
+load('data/trees.rda')      # If working directory is the project folder
+load('../data/trees.rda') # If working directory is the project/docs folder
+```
+
+It can also be useful to save the entire image of your local environment using the `save.image()` command.  This allows a user to quickly return to where they were working, without having to rerun any long or tedious computations. Images can contain many different objects, store local library structures, and are more flexible than just saving a data object. I often fully clean a data set, then make an image of that clean data, which I can easily load and move forward with modeling, graphing, exploratory analysis, or other data related work. 
+
+If your project only has a few data files, one cleaning script, and one analysis Rmarkdown file, it is tempting to ignore creating the `data-raw`, `data`, and `docs` directories. It is really obnoxious to impose order when things are already out of control and you need to modify 10 or 20 scripts. If there is any chance of a project growing in scope beyond just a single individual, it pays to organize where raw-data, clean data, and analysis scripts
+live at the beginning of the project.
+
+## Comma Separated Data
+
+To consider how data might be stored, we first consider the simplest file format: the comma separated values (csv) file. In this file time, each of the “cells” of data are separated by a comma. For example, the data file storing scores for three students might be as follows:
+
+    Able, Dave, 98, 92, 94
+    Bowles, Jason, 85, 89, 91
+    Carr, Jasmine, 81, 96, 97
+
+Typically when you open up such a file on a computer with Microsoft Excel installed, Excel will open up the file assuming it is a spreadsheet and put each element in its own cell. However, you can also open the file using a more 
+primitive program (say Notepad in Windows, TextEdit on a Mac) you'll see the raw form of the data. Having just the raw data without any sort of column header is problematic (which of the three numerical columns was the final exam - I can't tell!?). Ideally we would have column headers that store the name of the column.  
+
+    LastName, FirstName, Exam1, Exam2, FinalExam
+    Able, Dave, 98, 92, 94
+    Bowles, Jason, 85, 89, 91
+    Carr, Jasmine, 81, 96, 97
+
+To see another example, open the “Body Fat” data set from the Lock$^{5}$ introductory text book. The csv file can be downloaded from here: [http://www.lock5stat.com/data sets3e/BodyFat.csv]. The first few rows of the file are as follows:
+
+    Bodyfat,Age,Weight,Height,Neck,Chest,Abdomen,Ankle,Biceps,Wrist
+    32.3,41,247.25,73.5,42.1,117,115.6,26.3,37.3,19.7
+    22.5,31,177.25,71.5,36.2,101.1,92.4,24.6,30.1,18.2
+    22,42,156.25,69,35.5,97.8,86,24,31.2,17.4
+    12.3,23,154.25,67.75,36.2,93.1,85.2,21.9,32,17.1
+    20.5,46,177,70,37.2,99.7,95.6,22.5,29.1,17.7
+
+To make R read in the data arranged in this format, we need to tell R three things.
+
+1. Where does the data live? Often this will be the name of a file on your computer, but the file could just as easily live on the internet (provided your computer has internet access).
+
+2. Is the first row data or is it the column names?
+
+3. What character separates the data? Some programs store data using tabs to distinguish between elements, some others use white space. R's mechanism for reading in data is flexible enough to allow you to specify what the separator is.
+
+The primary function that we'll use to read data from a file and into R is the function `read.table()`. This function has many optional arguments but the most commonly used ones are outlined in the table below.
+
+|  Argument    |     Default       |    What it does                                   |
+|:------------:|:-----------------:|:--------------------------------------------------|
+| `file`       |                   | A character string denoting the file location     |
+| `header`     |   FALSE           | Is the first line column headers?                 |
+| `sep`        |    " "            | What character separates columns.  " " == any whitespace |
+| `skip`       |    0             | The number of lines to skip before reading data. This is useful when there are lines of text that describe the data or aren't actual data           |
+| `na.strings` |  'NA'             | What values represent missing data. Can have multiple. E.g.  `c('NA', -9999)`                  |
+|  `quote`     |  "  and '         | For character strings, what characters represent quotes.           |
+
+To read in the “Body Fat” data set we could run the R command:
+
+```{r}
+BodyFat <- read.table( 
+  file   = 'http://www.lock5stat.com/datasets3e/BodyFat.csv', # where the data lives
+  header = TRUE,                                              # first line is column names
+  sep    = ',' )                                              # Data is separated by commas
+
+str(BodyFat)
+```
+
+Looking at the help file for `read.table()` we see that there are variants such as `read.csv()` that sets the default arguments of `header` and `sep` more intelligently. Also, there are many options to customize how R responds to different input.
+
+## MS Excel
+
+Commonly our data is stored as a MS Excel file. There are two approaches you could use to import Excel data into R.
+
+1. From within Excel, export the worksheet that contains your data as a comma separated values (.csv) file and proceed using the tools in the previous section. Any formulas in the worksheet are not saved, but the result of the calculation is presented.
+
+2. Use functions within R that can work with the worksheet directly. Critically formulas in Excel are not imported, but the result of the formula is. One package that works nicely for this is the `readxl` package. 
+
+I generally prefer using option 2 because all of my collaborators can't live without Excel and I've resigned myself to this. Be aware though, if you have complicated  formulas in an Excel file, it is often times safer to export it as a .csv file to guarantee the data imported into R is correct. Furthermore, other spreadsheet applications (such as Google sheets) requires you to export the data as a .csv file so it is good to know both paths.
+
+Because R can only import a complete worksheet, the desired data worksheet must be free of notes to yourself about how the data was collected, preliminary graphics, or other stuff that isn't the data. I find it very helpful to have a worksheet in which I describe the sampling procedure and describe what each column means (and include meta information like units), then a second worksheet where the actual data is held without any other elements present, and potentially even a third worksheet where my “Excel Only” collaborators have created whatever plots and summary statistics they need. 
+
+The simplest package for importing Excel files seems to be the package `readxl`. Another package that does this is the `XLConnect` which does the Excel -> .csv conversion using Java. A third package the is the `xlsx` package, but requires Java be installed. The nice thing about these last two packages is that they also allow you to write Excel files as well. The `RODBC` package allows R to connect to various databases and it is possible to make it consider an Excel file as an extremely crude database.
+
+We will focus on the use of the `readxl` package. The `readxl` package provides a function `read_exel()` that allows us to specify which sheet within the Excel file to read and what character specifies missing data (it assumes a blank cell is missing data if you don't specifying anything). For the most part, the arguments are the same as `read.csv` but below are the most important changes and additions.
+
+|  Argument     |     Meaning                 |
+|:-------------:|:----------------------------|
+| `path`        | The file argument is called `path` instead. |
+| `sheet`       | Which sheet to read. Either the sheet name or sheet number.|
+| `range`       | The cell range to read from. E.g. "A5:G98"  |
+
+From GitHub, download the files `Example_1.xls`, through `Example_5.xls`, from the directory [https://github.com/BuscagliaR/STA_444_v2/tree/main/data-raw]. Place these files in the same directory that you store your course work or make a sub-directory store the files in. Make sure that the working directory that RStudio is using is that same directory (Session -> Set Working Directory), or review the discussion of creating R projects and use of Rmarkdown at the top of this chapter. 
+
+```{r}
+# load the library that has the read.xls function. 
+library(readxl)
+
+# Where does the data live relative to my current working location? 
+#
+# In my directory where this Rmarkdown file lives, I have made a subdirectory 
+#    named 'data-raw' to store all the data files. So the path to my data
+#    file will be 'data-raw/Example_1.xls'.
+# If you stored the files in the same directory as your RMarkdown script, you
+#    don't have to add any additional information and you can just tell it the
+#    file name 'Example_1.xls'
+# Alternatively I could give the full path to this file starting at the root
+#    directory which, for me, is '~/GitHub/444/data-raw/Example_1.xls'
+#    but for Windows users it might be 'C:/444/Chapter9/Example_1.xls'. This looks
+#    odd because Windows usually uses a backslash to represent the directory
+#    structure, but a backslash has special meaning in R and so it wants 
+#    to separate directories via forward slashes.
+
+# read the first worksheet of the Example_1 file
+# data.1 <- read_excel('~/GitHub/444/data-raw/Example_1.xls')  # absolute path
+data.1 <- read_excel('data-raw/Example_1.xls')   # relative to this Rmarkdown file
+
+# read the second worksheet where the second worksheet is named 'data'
+data.2 <- read_excel('data-raw/Example_2.xls', sheet=2     )   
+data.2 <- read_excel('data-raw/Example_2.xls', sheet='data')   
+```
+
+There is one additional problem that shows up while reading in Excel files. Blank columns often show up in Excel files because at some point there was some text in a cell that got deleted but a space remains and Excel still thinks there is data in the column. To fix this, you could find the cell with the space in it, or you can select a bunch of columns at the edge and delete the entire columns. Alternatively, you could remove the column after it is read into R using typical data frame manipulation tools such as those learned in Chapter 8 or our `dplyr` tools which we will explore more of in future chapters.
+
+Open up the file `Example_4.xls` in Excel and confirm that the data sheet has name columns out to `carb`. Read in the data frame using the following code:
+
+```{r}
+data.4 <- read_excel('data-raw/Example_4.xls', sheet='data')   # Extra Column Example
+str(data.4)
+```
+
+We notice that after reading in the data, there is an additional column that just has missing data (the NA stands for not available which means that the data is missing) and three rows that are blank. Go back to the Excel file and go to row 4 column N and notice that the cell isn't actually blank, there is a space. Delete the space, save the file, and then reload the data into R. You should notice that the extra columns are now gone. If you are like me, you never want to do that again - so you could also remove these `NA` elements using some `dplyr` magic.
+
+```{r}
+data.4 <- data.4 %>% select(-(13:14)) %>% slice(-(31:34))
+```
+
+Now view the data in R and notice we have created true tidy data ready for continued use.
+
+## Google Sheets
+
+The Google alternative to MS Excel is Google Sheets where the data lives on Google's cloud services. You could download a `.csv` version and import it but it is more convenient to use Google's Sheets API, which is now on version 4. The R package that implements the API is `googlesheets4`. This package is built using a few other packages, notably the `googledrive` package which allows a user to access the contents of a Google drive. It is useful to know that Google Sheets supports a robust notation for specifying cell ranges:
+
+* Sheet1!A1:B2 refers to the first two cells in the top two rows of Sheet1.
+* Sheet1!A:A refers to all the cells in the first column of Sheet1.
+* Sheet1!1:2 refers to all the cells in the first two rows of Sheet1.
+* Sheet1!A5:A refers to all the cells of the first column of Sheet 1, from row 5 onward.
+* A1:B2 refers to the first two cells in the top two rows of the first visible sheet.
+* Sheet1 refers to all the cells in Sheet1.
+
+The first time you run a `googledrive` function, it will ask you to authenticate to the Google services and to store the authentication key in your R profile. It will warn you that you are allowing R to access your data. You'll need to agree
+to this and R will store this authentication token. 
+
+### Reading
+
+The main function to read from a Google Sheet is `read_sheet()` The most pertinent parameters are below, but there are a few other interesting options.
+
+|  Parameter   |  Description           |
+|-------------:|:------------------------------------------|
+| `ss`         | Something that identifies the Google sheet: a file ID, a URL or `dribble` which is the "drive tibble" that the `googledrive` package uses to represent Drive files.|
+| `sheet`      | This represents the tab within the spreadsheet file. It can be the numerical position or tab name.|
+| `range`      | The cell range to read from. |
+| 
+
+```{r, echo=FALSE}
+# Force Google drive to use a prior cached authentication token...
+# Otherwise I'll just get an error because I can't do the web authentication.
+options(gargle_oauth_email = "robert.buscaglia@gmail.com")
+```
+
+```{r, eval=FALSE}
+# The following link is to a data set on my Google Drive STA 444 directory
+# I have it set so that anyone with the link can read the spreadsheet so the
+# code here will work for anybody.
+link <- 'https://docs.google.com/spreadsheets/d/1qcRjt-sTK6kDgqZVa0xXv7Sagk27CGlUdH2QP6dVeAw/'
+
+# Just using the direct link
+df <- read_sheet(link, sheet='Data')
+head(df)
+```
+
+This works well for individual Sheets that you have either an ID or URL. However, it would be nice to not have to look that information and instead give the path within your Google Drive. To do that, we need to authenticate and give R the rights to access the drive.
+
+If your code is running in a non-interactive environment (for example when knitting your Rmarkdown document) you'll need to make the authentication happen by finding a prior authorization token.
+
+```{r}
+# Force Google drive to use a prior cached authentication token...
+# Notice I still had to agree to letting R have access to my Google Drive
+# at some point in time!
+options(gargle_oauth_email = "robert.buscaglia@gmail.com")
+```
+
+You can read about the details of how/why this works at the `gargle` package vignette about [non-interactive authentication](https://gargle.r-lib.org/articles/non-interactive-auth.html)
+
+```{r, cache=TRUE, eval=FALSE} 
+# Now read using the path within my Google Drive
+df <- googledrive::drive_get('STA_445/CherryTrees445') %>%
+        read_sheet( sheet='Data' ) 
+```
+
+Another consideration is that Google limits the number of read requests in a short period of time and if you are tweaking your Rmarkdown, you might run into this issue. You might try caching the R chunk.
+
+### Writing
+
+The `googlesheets4` package also supports writing to the spreadsheet. The function `write_sheet` writes a data frame to a sheet, whereas `range_write` will write data to a specific location within a sheet.
+
+```{r, cache=TRUE, eval=FALSE}
+# Here I'm only allowed to write to the Sheet because I've authenticated
+# with Google. I have this particular sheet set up so that anybody with the
+# link can read the file, but cannot write to the file. So this code should
+# not work for you!
+write_sheet(data=trees, ss=link, sheet='Data')
+```
+
+## Multiple files
+
+There are several cases where our data is stored in multiple files and we want to read them in.  If the data sources all have an identical column format, we can just stack the data frames together using the `rbind` command.
+
+```{r, eval=FALSE}
+files <- c('file1.csv', 'file2.csv', 'file3.csv')  # Files to be read in.
+data <- NULL   # what will the output data frame be named
+for( file in files){  # for each element of our files vector
+  temp.data <- read.csv(file)     # read in the file 
+  data <- rbind(data, temp.data)  # Append it to our final data set
+}
+```
+
+In the example above, we might need to modify the `read.csv()` command, but fortunately it isn't too hard to combine a `for` loop with set of statements to read in the data set. Generally when we have to read in multiple files, a good first step is to inspect the directory for all available files. Fortunately the function `list.files()` will return a of character strings containing all the files in a directory. Here are a few of the files I have in the `data-raw` directory while building this book.
+
+```{r}
+files <- list.files('data-raw/') 
+files %>% tail()
+```
+
+## Exercises  {#Exercises_DataImport}
+
+### Exercise 1 {-}
+
+Download from GitHub the data file by clicking on this link:  [Example_5.xls](https://github.com/BuscagliaR/STA_444_v2/raw/refs/heads/main/data-raw/Example_5.xls). Open it in Excel and figure out which sheet of data we should import into R. At the same time figure out how many initial rows need to be skipped. Import the data set into a data frame and show the structure of the imported data using the `str()` command. Make sure that your data has $n=31$ observations and the three columns are appropriately named. If you make any modifications to the data file, comment on those modifications.
+
+
+### Exercise 2 {-}
+
+Download from GitHub the data file by clicking on this link: [Example_3.xls](https://github.com/BuscagliaR/STA_444_v2/raw/refs/heads/main/data-raw/Example_3.xls). Import the data set into a data frame and show the structure of the imported data using the `tail()` command which shows the last few rows of a data table. Make sure the Tesla values are `NA` where appropriate and that both `-9999` and `NA` are imported as NA values. If you make any modifications to the data file, comment on those modifications.
+
+### Exercise 3 {-}
+
+Download all of the files from GitHub `data-raw/InsectSurveys` directory which have been linked [here.](https://github.com/BuscagliaR/STA_444_v2/tree/main/data-raw/InsectSurveys) Each month's file contains a sheet with information about each of the sites that was surveyed. The second sheet contains information about the number of each species that was observed at each site. Import the data for each month and create a single `site` data frame with information from each month. Do the same for the `observations`. Document any modifications you make to the data files. Comment on the importance of consistency of your data input sheets.

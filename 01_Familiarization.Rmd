@@ -218,18 +218,20 @@ Often I find myself asking how to do something but I don't know the function or 
 
 Create an RMarkdown file that solves the following exercises.
 
-1.  Calculate $\log\left(6.2\right)$ first using base $e$ and second using base 
-    $10$. To figure out how to do different bases, it might be helpful to look at 
-    the help page for the `log` function.
+### Exercise 1 {-}
 
-2.  Calculate the square root of 2 and save the result as the variable named sqrt2. 
-    Have R display the decimal value of sqrt2. 
-    *Hint: use Google to find the square root function. Perhaps search on the* 
-    *keywords  "R square root function".*
+Calculate $\log\left(6.2\right)$ first using base $e$ and second using base $10$. To figure out how to do different bases, it might be helpful to look at the help page for the `log` function.
 
-3.  This exercise walks you through installing a package with all the data sets used 
-    in the textbook *The Statistical Sleuth*.
-    a) Install the package `Sleuth3` on your computer using RStudio. 
-    b) Load the package using the `library()` command.
-    c) Print out the data set `case0101`.
+### Exercise 2 {-}
 
+Calculate the square root of 2 and save the result as the variable named sqrt2. Have R display the decimal value of sqrt2. *Hint: use Google to find the square root function. Perhaps search on the keywords "R square root function".*
+
+### Exercise 3 {-}
+
+This exercise walks you through installing a package with all the data sets used in the textbook *The Statistical Sleuth*.
+
+**a)** Install the package `Sleuth3` on your computer using RStudio.
+
+**b)** Load the package using the `library()` command.
+
+**c)** Print out the data set `case0101`.

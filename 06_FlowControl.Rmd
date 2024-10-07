@@ -214,7 +214,7 @@ The basic form of a `while` loop is as follows:
 ```{r, eval=FALSE}
 # while loop with multiple lines to be repeated
 while( logical.test ){
-  expression1      # you can have as much code here as neccassary!
+  expression1      # you can have as much code here as necessary!
   expression2
 }
 ```
@@ -254,7 +254,7 @@ for( index in vector ){
 }
 ```
 
-The `index` variable will take on each value in `vector` in succession and the next statement will be evaluated. As always, the statement can be multiple statements wrapped in curly brackets {} and include as much code as neccassary to get the job done. Notice how the statement below changes as the `for` loop is executed.
+The `index` variable will take on each value in `vector` in succession and the next statement will be evaluated. As always, the statement can be multiple statements wrapped in curly brackets {} and include as much code as necessary to get the job done. Notice how the statement below changes as the `for` loop is executed.
 
 ```{r}
 for( i in 1:5 ){
@@ -296,7 +296,7 @@ For a more statistical case where we might want to perform a loop, we can consid
 library(dplyr)
 library(ggplot2)
 
-# bootstrap 5000 resamples from the trees dataset.
+# bootstrap 5000 resamples from the trees data set.
 SampDist <- data.frame(xbar=NULL) # Make a data frame to store the means 
 for(i in 1:5000){
   ## Do some stuff
@@ -344,7 +344,7 @@ my.var <- function(x){
 }
 ```
 
-With our funtion created, we can now feed it any vector of data we would like and obtain the sample variance.
+With our function created, we can now feed it any vector of data we would like and obtain the sample variance.
 
 ```{r}
 # create a vector that I wish to calculate the variance of
@@ -534,6 +534,6 @@ for( i in 1:24 ){
 game <- any( throws == 12 ) # Gives a TRUE/FALSE value
 ```
 
-**c)** Wrap all of your code from part (b) in *another* `for(){}` loop that you run 10,000 times. Save the result of each game in a `games` vector that will have 10,000 elements that are either TRUE/FALSE depending on the outcome of that game. You'll need initiallize the `games` vector to NULL and modify your part (b) code to save the result into some location in the vector `games`.
+**c)** Wrap all of your code from part (b) in *another* `for(){}` loop that you run 10,000 times. Save the result of each game in a `games` vector that will have 10,000 elements that are either TRUE/FALSE depending on the outcome of that game. You'll need to initialize the `games` vector to NULL and modify your part (b) code to save the result into some location in the vector `games`.
 
 **d)** Finally, calculate win percentage by taking the average of the `games` vector.

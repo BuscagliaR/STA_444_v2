@@ -2,7 +2,7 @@
 
 ```{r, echo=FALSE}
 # Un-attach any packages that happen to already be loaded. In general this is unnecessary
-# but is important for the creation of the book to not have package name spaces
+# but is important for the creation of the book to not have package namespaces
 # fighting unexpectedly.
 pkgs = names(sessionInfo()$otherPkgs)
 if( length(pkgs > 0)){
@@ -13,6 +13,7 @@ if( length(pkgs > 0)){
 }
 knitr::opts_chunk$set(cache=FALSE)
 ```
+
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)  
 ```

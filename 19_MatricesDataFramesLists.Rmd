@@ -128,7 +128,7 @@ But if we wished to take the inner-product, a common linear algebra calculation,
 x %*% y
 ```
 
-R does another trick when doing vector algebra. If the lengths of the two vectors don't match, R will **recycle** the elements of the shorter vector to come up with vector the same length as the longer. This is potentially confusing and can cause problems if you are not aware of this behavior. Some exercises below will give you some insight with these issues. To understand how recylcling work, lets consider taking a vector and adding `1`.
+R does another trick when doing vector algebra. If the lengths of the two vectors don't match, R will **recycle** the elements of the shorter vector to come up with vector the same length as the longer. This is potentially confusing and can cause problems if you are not aware of this behavior. Some exercises below will give you some insight with these issues. To understand how recycling work, lets consider taking a vector and adding `1`.
 
 ```{r}
 x <- 1:4
@@ -394,7 +394,7 @@ str(Family)
 Now we see that the list `Family` has six elements and some of those elements are pretty complicated.  It is not uncommon to use lists of lists which have a leveled nesting structure and follow a similar syntax to just a single list.
 
 ```{r}
-Family$FamilyNest <- Family # Create a list within a list that conatins all of Familiy
+Family$FamilyNest <- Family # Create a list within a list that contains all of Family
 Family$Spouse # first level list
 Family$FamilyNest$Spouse # second level list
 ```
@@ -567,7 +567,7 @@ Create and manipulate a list.
 
 The function `lm()` creates a linear model, which is a general class of model that includes both regression and ANOVA. We will call this on a data frame and examine the results. For this problem, there isn't much to figure out, but rather the goal is to recognize the data structures being used in common analysis functions.
 
-**a)** There are many data sets that are included with R and its packages. One of which is the `trees` data which is a data set of $n=31$ cherry trees. Load this dataset into your current workspace using the command:
+**a)** There are many data sets that are included with R and its packages. One of which is the `trees` data which is a data set of $n=31$ cherry trees. Load this data set into your current workspace using the command:
 
 ```{r}
 data(trees)     # load trees data.frame

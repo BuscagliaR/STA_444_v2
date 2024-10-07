@@ -133,7 +133,7 @@ To be clear of the results of the testing of GPA by Gender, the resulting t-test
 
 #### Paired t-tests
 
-In a paired t-test, there is some mechanism for pairing observations in the two categories. For example, perhaps we observe the maximum weight lifted by a strongman competitor while wearing a weight belt vs not wearing the belt. Then we look at the difference between the weights lifted for each athlete. In the example we'll look at here, we have the ages of 100 randomly selected married heterosexual couples from St. Lawerence County, NY. For any given man in the study, the obvious woman to compare his age to is his wife's. So a paired test makes sense to perform. Below we do our usual steps of loading data and doing a brief exploratory analysis via a scatter graph of the Husband and Wife ages.
+In a paired t-test, there is some mechanism for pairing observations in the two categories. For example, perhaps we observe the maximum weight lifted by a strongman competitor while wearing a weight belt vs not wearing the belt. Then we look at the difference between the weights lifted for each athlete. In the example we'll look at here, we have the ages of 100 randomly selected married heterosexual couples from St. Lawrence County, NY. For any given man in the study, the obvious woman to compare his age to is his wife's. So a paired test makes sense to perform. Below we do our usual steps of loading data and doing a brief exploratory analysis via a scatter graph of the Husband and Wife ages.
 
 ```{r, fig.height=3}
 data('MarriageAges', package='Lock5Data')

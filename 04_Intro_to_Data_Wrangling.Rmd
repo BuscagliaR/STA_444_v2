@@ -568,70 +568,96 @@ warpbreaks %>%
 
 ## Exercises  {#Exercises_IntroDataWrangling}
 
-1.  The data set `ChickWeight` tracks the weights of 48 baby chickens (chicks) feed four different diets.
-    a.  Load the data set using  
-        ```{r}
-        data(ChickWeight)
-        ```
-    b.  Look at the help files for the description of the columns.
-    c)  Remove all the observations except for observations from day 10 or day 20. The tough part in this instruction is distinguishing between "and" and "or". Obviously there are no observations that occur from both day 10 AND day 20. Google 'R logical operators' to get an introduction to those, but the short answer is that and is `&` and or is `|`.
-    d)  Calculate the mean and standard deviation of the chick weights for each diet group on days 10 and 20. 
+### Exercsie 1 {-}
+
+The data set `ChickWeight` tracks the weights of 48 baby chickens (chicks) feed four different diets.
+
+
+**a)** Load the data set using
+
+```{r}
+data(ChickWeight)
+```
         
-2.  The OpenIntro textbook on statistics includes a data set on body dimensions.
-    a)  Load the file using 
-        ```{r}
-        Body <- read.csv('http://www.openintro.org/stat/data/bdims.csv')
-        ```
-    b)  The column `sex` is coded as a 1 if the individual is male and 0 if female. This is a non-intuitive labeling system. Create a new column `sex.MF` that uses labels Male and Female. Use this column for the rest of
-        the problem. _Hint: The `ifelse()` command will be very convenient here._
-    c)  The columns `wgt` and `hgt` measure weight and height in kilograms and centimeters (respectively). Use these to calculate the Body Mass Index (BMI) for each individual where
-    $$BMI=\frac{Weight\,(kg)}{\left[Height\,(m)\right]^{2}}$$
+**b)** Look at the help files for the description of the columns.
+
+**c)** Remove all the observations except for observations from day 10 or day 20. The tough part in this instruction is distinguishing between "and" and "or". Obviously there are no observations that occur from both day 10 AND day 20. Google 'R logical operators' to get an introduction to those, but the short answer is that and is `&` and or is `|`.
+
+**d)** Calculate the mean and standard deviation of the chick weights for each diet group on days 10 and 20. 
+        
+### Exercise 2 {-}
+
+The OpenIntro textbook on statistics includes a data set on body dimensions.
+
+**a)**  Load the file using 
+
+```{r}
+Body <- read.csv('http://www.openintro.org/stat/data/bdims.csv')
+```
+        
+**b)** The column `sex` is coded as a 1 if the individual is male and 0 if female. This is a non-intuitive labeling system. Create a new column `sex.MF` that uses labels Male and Female. Use this column for the rest of the problem. _Hint: The `ifelse()` command will be very convenient here._
+
+**c)** The columns `wgt` and `hgt` measure weight and height in kilograms and centimeters (respectively). Use these to calculate the Body Mass Index (BMI) for each individual where
+
+$$
+BMI=\frac{Weight\,(kg)}{\left[Height\,(m)\right]^{2}}
+$$
+
 Be mindful of the units used in the BMI calculation. Some unit conversion is required.
-    d)  Double check that your calculated BMI column is correct by examining the summary statistics of the column (e.g. `summary(Body)`). BMI values should be between 18 to 40 or so.  Did you make an error in your calculation?  
-    e)  The function `cut` takes a vector of continuous numerical data and creates a factor based on your given cut-points. 
-        ```{r}
-        # Define a continuous vector to convert to a factor
-        x <- 1:10
 
-        # divide range of x into three groups of equal length
-        cut(x, breaks=3)
+**d)** Double check that your calculated BMI column is correct by examining the summary statistics of the column (e.g. `summary(Body)`). BMI values should be roughly between $16$ to $40$.  Did you make an error in your calculation?
 
-        # divide x into four groups, where I specify all 5 break points 
-        cut(x, breaks = c(0, 2.5, 5.0, 7.5, 10))
-        # (0,2.5] (2.5,5] means 2.5 is included in first group
-        # right=FALSE changes this to make 2.5 included in the second  
+
+**e)** The function `cut` takes a vector of continuous numerical data and creates a factor based on your given cut-points.
+
+```{r}
+# Define a continuous vector to convert to a factor
+x <- 1:10
+
+# divide range of x into three groups of equal length
+cut(x, breaks=3)
+
+# divide x into four groups, where I specify all 5 break points 
+cut(x, breaks = c(0, 2.5, 5.0, 7.5, 10))
+# (0,2.5] (2.5,5] means 2.5 is included in first group
+# right=FALSE changes this to make 2.5 included in the second  
+
+# divide x into 3 groups, but give them a nicer
+# set of group names
+cut(x, breaks=3, labels=c('Low','Medium','High'))
+```
+
+Create a new column of in the data frame that divides the age into decades (10-19, 20-29, 30-39, etc). Notice the oldest person in the study is $67$.
+
+```{r}
+Body <- Body %>%
+  mutate( Age.Grp = cut(age,
+                        breaks=c(10,20,30,40,50,60,70),
+                        right=FALSE))
+```
         
-        # divide x into 3 groups, but give them a nicer
-        # set of group names
-        cut(x, breaks=3, labels=c('Low','Medium','High'))
-        ```
-        Create a new column of in the data frame that divides the age into decades (10-19, 20-29, 30-39, etc). Notice the oldest person in the study is 67.
-        ```{r}
-        Body <- Body %>%
-          mutate( Age.Grp = cut(age,
-                                breaks=c(10,20,30,40,50,60,70),
-                                right=FALSE))
-        ```
-  f)  Find the average BMI for each `Sex.MF` by `Age.Grp` combination.
+**f)** Find the average BMI for each `Sex.MF` by `Age.Grp` combination.
     
-3.  Suppose we have a data frame with the following two variables:
+### Exercise 3 {-}
 
-    ```{r}
-    df <- tribble(
-      ~SubjectID, ~Outcome,
-      1, 'good',
-      1, 'good',
-      1, 'good',
-      2, 'good',
-      2, 'bad', 
-      2, 'good',
-      3, 'bad',
-      4, 'good',
-      4, 'good')
-    ```
+Suppose we have a data frame with the following two variables:
+
+```{r}
+df <- tribble(
+  ~SubjectID, ~Outcome,
+  1, 'good',
+  1, 'good',
+  1, 'good',
+  2, 'good',
+  2, 'bad', 
+  2, 'good',
+  3, 'bad',
+  4, 'good',
+  4, 'good')
+```
     
 The `SubjectID` represents a particular individual that has had multiple measurements. What we want to know is what proportion of individuals were consistently `good` for all outcomes they had observed. So in our toy example set, subjects `1` and `4` where consistently good, so our answer should be $50\%$. *Hint: The steps below help understand the thinking behind coding this answer.*
     
-  a) As a first step, we will summarize each subject with a column denotes if all the subject's observations were `good`. This should result in a column of TRUE/FALSE values with one row for each subject. *The `all()` function should be quite useful here. The corresponding `any()` function is also useful to know about.*.
+**a)** As a first step, we will summarize each subject with a column denotes if all the subject's observations were `good`. This should result in a column of TRUE/FALSE values with one row for each subject. *The `all()` function should be quite useful here. The corresponding `any()` function is also useful to know about.*.
 
-  b)  Calculate the proportion of subjects that where consistently good by calculating the `mean()` of the TRUE/FALSE values. _This works because TRUE/FALSE values are converted to 1/0 values and then averaged._
+**b)** Calculate the proportion of subjects that where consistently good by calculating the `mean()` of the TRUE/FALSE values. _This works because TRUE/FALSE values are converted to 1/0 values and then averaged._

@@ -186,13 +186,13 @@ $$
 z_{i}=\frac{x_{i}-\bar{X}}{\sigma/\sqrt{n}} 
 $$
  
-Unfortunately RMarkdown is a little picky about spaces near the `$` and `$$` signs and you can't have any spaces between them and the LaTeX command. For a more information about all the different symbols you can use, google 'LaTeX math symbols'. In general, if you open a LaTeX environment using \$\$, be sure to start writing on the line directly after them, and do not include extra spaces!
+Unfortunately RMarkdown is a little picky about spaces near the `$` and `$$` signs and you can't have any spaces between them and the LaTeX command. For a more information about all the different symbols you can use, Google 'LaTeX math symbols'. In general, if you open a LaTeX environment using \$\$, be sure to start writing on the line directly after them, and do not include extra spaces!
 
 ## Tables {-}
 
 For the following descriptions of the simple, grid, and pipe tables, I've shamelessly stolen from the [Pandoc documentation](http://pandoc.org/README.html#tables)
 
-One way to print a table is to just print it in R and have the table presented in the code chunk. For example, suppose I want to print out the first 4 rows of the trees dataset.
+One way to print a table is to just print it in R and have the table presented in the code chunk. For example, suppose I want to print out the first 4 rows of the trees data set.
 
 ```{r}
 data <- trees[1:4, ]
@@ -330,7 +330,7 @@ model %>%
   pander::pander()   # make the table print *pretty*
 
 model %>% 
-  anova() %>%                 # The usual anoval table
+  anova() %>%                 # The usual anova table
   pander::pander(missing='')  # Make the table print *pretty*
 ```
 
