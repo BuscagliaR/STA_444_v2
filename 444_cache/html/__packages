@@ -16,3 +16,7 @@ scales
 ggridges
 readxl
 googlesheets4
+viridisLite
+viridis
+latex2exp
+plotly

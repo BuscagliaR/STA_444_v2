@@ -16,7 +16,7 @@ knitr::opts_chunk$set(cache=FALSE)
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
-library(lubridate)
+library(lubridate) # handling of date and time objects
 ```
 
 **CHAPTER IS STILL BEING EDITED**
