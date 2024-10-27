@@ -20,88 +20,79 @@ library(dplyr)     # for the join stuff
 library(tidyverse) # dplyr, tidyr, ggplot2, etc.
 ```
 
-**CHAPTER IS STILL BEING EDITED**
-
 Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/sVTfG2TH_gU).
 
-Most of the time, our data is in the form of a data frame and we are interested
-in exploring the relationships. However most procedures in R expect the data to
-show up in a 'long' format where each row is an observation and each column is a
-covariate. In practice, the data is often not stored like that and the data comes
-to us with repeated observations included on a single row. This is often done as
-a memory saving technique or because there is some structure in the data that 
-makes the 'wide' format attractive. As a result, we need a way to convert data
-from 'wide' to 'long' and vice-versa.
+Most of the time, our data is in the form of a data frame and we are interested in exploring relationships between variables. Recall that **tidydata** refers to data structured such that each row is an observation, each column is a variable, and the data contains minimal NAs (preferably none). Data stored this way is often referred to as **wide** data, where there are many columns, potentially "wider" than it is long, thus the name. Depending on our task, there are many procedures in R that expect the data to show up in a **long** format where the data frame now has much fewer columns and possibly a very large number of rows. In practice, the data is often stored in a wide form, which better matches a tidydata structure. This is often done as a memory saving technique or because there is some structure in the data that makes the wide format attractive. As a result, we need a way to convert data from "wide" to "long" and vice-versa, a task commonly referred to as **pivoting**.
 
-Next we need a way to squish two data frames together. It is often advantageous
-to store data that would be be repeated separately in a different table so that
-a particular piece of information lives in only one location. This makes the
-data easier to modify, and more likely to maintain consistence. However, this
-practice requires that, when necessary, we can add information to a table, that
-might involve a lot of duplicated rows.
+Next we need a way to squish two data frames together. It is often advantageous to store data that would be be repeated separately in a different table so that a particular piece of information lives in only one location. For example with some medical work conducted by the author, assay data is stored in one data frame, while patient meta data is stored in another. This makes the data easier to modify and maintains consistency within a data frame. Referring again to the medical data, this helps to ensure all assay data is stored in the same format and easy to access for analysis, regardless of differences in meta information that can be drastically different depending on the patient, hospital location, and practitioner. However, this practice requires that, when necessary, we can add information to a table, that might involve a lot of duplicated rows. There are many times when the assay information needs to be rejoined with the patient meta information, to determine if there are differences in the patient backgrounds that cause changes to the assay results. Combining data frames that store different types of information is commonly refereed to as **joining**.
 
+In this chapter, along with other common data cleaning tasks, we look to help the reader better understanding the concepts of pivoting and joining, advancing and improving the use of large data structures.
 
-## `cbind` & `rbind`
-Base R has two functions for squishing two data frames together, but they assume
-that the data frames are aligned correctly. The `c` and `r` parts of `cbind` and
-`rbind` correspond to if we are pushing columns together or rows together. 
+## Binding columns (cbind) and rows (rbind)
+
+Base R has two functions for joining two data frames together, but they assume that the data frames are aligned correctly. Aligned here refers to that if we want to join on columns, each has the same number of rows; similarly, if we want to join on rows, each has the same number of columns. While it is possible to join different dimensions (R will default to pushing NAs into the data), alignment can also referred to column and row names matching between data frames. Base R commands that do simple joins of rows and columns are known as the `bind` commands. The `c` and `r` parts of `cbind` and `rbind` correspond to if we are pushing columns together or rows together. 
 
 ```{r}
-# Define a tibble using a row-wise layout.
+# Define a tibble using a row-wise layout, storing first names
+# tribbles were introduced earlier as a more strict version of a data.frame
+# it can be a good time to start using tibbles/tribbles to make sure
+# R does not force in any changes you were not intending!
 df1 <- tribble(            
   ~ID,  ~First,
   1,   'Alice',
   2,   'Bob',
   3,   'Charlie')
 
-# Define a tibble by columns
+# Define a tibble by columns, storing last names
 df2 <- tibble( Last = c('Anderson', 'Barker', 'Cooper') )
 
-# Squish the two tibbles together by columns - results in a data.frame
+# Join the two tibbles together by columns - results in a data.frame
 People <- cbind( df1, df2 )
 People
+str(People)
 ```
 
-Squishing together by rows is easy as well.
-```{r}
-df3 <- tibble( ID=4, First='Daniel', Last='Davidson' )
+Joining together by rows is easy as well. Maybe we are given a new data entry, with all information known, and want to add on this observation as a new row.
 
+```{r}
+# new observation, a tibble containing one row
+df3 <- tibble( ID=4, First='Daniel', Last='Davidson' )
+# join new observation to People
 People <- rbind( People, df3 )
 People
 ```
 
-If both inputs have row or column names, then they don't need to be appropriate
-arranged as `rbind` and `cbind` can figure out how to order them. 
+If both inputs have row or column names, then they don't need to be appropriate arranged as `rbind` and `cbind` can figure out how to order them.
 
-There are equivalent functions in the `dplyr` package that do the same job, but
-will work more consistently. For example, if we try to bind a row of data that
-has more columns, `bind_rows()` will introduce a column of `NA` values to the
-smaller data set. Furthermore, if the column orders are mixed up
-
-```{r, error=TRUE}
-df4 <- tibble(First='Elise', ID=5, Last='Erikson') # Notice changed columns order! 
-rbind(People, df4)  # but rbind() can still figure it out!
-
-df5 <- tibble(First='Frank', ID=6, Last='Fredrick', dob=lubridate::ymd('1980-7-21'))
-rbind(People, df5)   # throws an error
-
-bind_rows( People, df4, df5) # Inserts NA values as appropriate.
+```{r}
+df4 <- tibble(Last = 'Banner', First = 'Bruce', ID=5)
+People <- rbind(People, df4)
+People
 ```
 
-In general, I find that `rbind()` and `bind_rows()` work really well and I use
-them quite often. However, `cbind()` and `bind_cols()` are less useful because
-I have to make sure that either I have rownames set up for each data set, or I
-have to be very careful with the ordering. Instead, it is safer to write code
-that relies on `joins`, which will be discussed later in this chapter.
+One limitation of the base R functions is the alignment. The R bind commands must have proper dimension matches, else you will receive an error. Even just spelling the column name wrong will cast an error, which is not such a bad check to have (i.e. if you named the last column "id" instead of "ID", it will not know how to join). Below shows that if the dimension does not match (trying to join a row with two entries when three columns exist), we are returned an error.
 
+```{r, error=TRUE}
+# tibble row of first and last name, but no ID.
+df5 <- tibble(First = 'Peter', Last = 'Parker')
+# will not properly join, throws an error
+rbind(People, df5)
+```
+
+### bind_rows() and bind_cols() - dplyr
+
+There are equivalent functions in the `dplyr` package that do the same job, but will work more consistently. For example, if we try to bind a row of data that has more columns, `bind_rows()` will introduce a column of `NA` values to the smaller data set. Furthermore, if the column orders are mixed up
+
+```{r, error=TRUE}
+df6 <- tibble(First='Frank', ID=6, Last='Fredrick', dob=lubridate::ymd('1980-7-21'))
+bind_rows( People, df6) # Inserts NA values as appropriate.
+```
+
+In general, `rbind()` and `bind_rows()` work really well and their use is quite common. Base R`cbind()` and `bind_cols()` are less useful because you have to make sure that either rownames exists when setting up a data set or be very careful with the row ordering. Instead, it is safer to write code that relies on functions that are built specifically to do **joins**, which are discussed later in this chapter.
 
 ## Table Pivots
 
-There is a common issue with obtaining data with many columns that you wish were
-organized as rows. For example, I might have data in a grade book that has
-several homework scores and I'd like to produce a nice graph that has assignment
-number on the x-axis and score on the y-axis. Unfortunately this is incredibly
-hard to do when the data is arranged in the following way:
+There is a common issue with obtaining data with many columns that you wish were organized as rows. For example, I might have data in a grade book that has several homework scores and I'd like to produce a nice graph that has assignment number on the x-axis and score on the y-axis. Unfortunately this is difficult to execute when the data is arranged in the **wide** format, such as the following:
 
 ```{r}
 grade.book <- rbind(
@@ -111,31 +102,20 @@ grade.book <- rbind(
 grade.book
 ```
 
-What we want to do is turn this data frame from a *wide* data frame into a *long*
-data frame. In MS Excel this is called pivoting. Essentially I'd like to create
-a data frame with three columns: `name`, `assignment`, and `score`. That is to
-say that each homework datum really has three pieces of information: who it came
-from, which homework it was, and what the score was. It doesn't conceptually
-matter if I store it as 3 rows of 4 columns or 12 rows so long as there is a way
-to identify how a student scored on a particular homework. So we want to reshape
-the HW1 to HW4 columns into two columns (assignment and score). 
+What we want to do is turn this data frame from a *wide* data frame into a *long* data frame, commonly referred to as pivoting the data. Essentially we want to create a data frame with three columns: `name`, `assignment`, and `score`. That is to say that each homework datum really has three pieces of information: who it came from, which homework assignment it was, and what the recorded score was. It does not conceptually matter if I store it as 3 rows of 4 columns or 12 rows, so long as there is a way to identify how a student scored on a particular homework. The information is the same, it is only the method in which we are storing the data that changes. So we want to *reshape*
+the HW1 to HW4 columns into two columns (assignment and score). This relies on the `tidyr` package of the tidyverse suite. This package was built by the same people that created `dplyr` and `ggplot2`. The homepage for this package is here [tidyr](https://tidyr.tidyverse.org/) and contains a useful cheatsheet of data tidying commands.
 
-This package was built by the same people that created dplyr and ggplot2 and
-there is a nice introduction at: [http://blog.rstudio.org/2014/07/22/introducing-tidyr/]
+There have been several iterations of functions to convert data from a wide to long and back again. When Hadley first began thinking through these issues in the `reshape` package, he called these two functions `melt` and `cast`. The
+second iteration in these functions in the `tidyr` package were called `gather` and `spread`. It seems we have now landed on unified language, simply named `pivot_wider()` and `pivot_longer()`.
 
-There have been several iterations of functions to convert data from a wide to
-long and back again. When Hadley first began thinking through these issues in
-the `reshape` package, he called these two functions `melt` and `cast`. The
-second iteration in these functions in the `tidyr` package were called `gather`
-and `spread`. I believe we are finally in the last which are simply named
-`pivot_wider()` and `pivot_longer()`.
-
-There are two main verbs to remember:
+These are the two main *verbs* we will want to learn, practice, and remember:
 
 |  Function     |   Description                                                                    |
 |:-------------:|:---------------------------------------------------------------------------------|
 | `pivot_longer()` |  Gather multiple columns that are related into two columns that contain the original column name and the value. For example for columns `HW1`, `HW2`, `HW3` we would gather them into two columns: `Homework` and `Score`. In this case, we refer to `Homework` as the _names_ column and `Score` as the _values_ column.  |
 | `pivot_wider()`  | This is the opposite function. This takes a _names_ and _values_ pair of columns and forms a new column for each level of the _names_ column(s). |
+
+Let us pivot our grade book into the long format. You will notice that each assignment name gets placed into the *Homework* column, and the corresponding score for each student into the *score* column. It may seem like there is more repetitions of the data now, but in fact, this is the same information as previously. Long formats can take up more memory with repetitions in certain columns (like *name* below), but the long format is very powerful for filtering and making use of the data.
 
 ```{r}
 # first we gather the score columns into columns we'll name Homework and Score
@@ -147,130 +127,79 @@ tidy.scores <- grade.book %>%
 tidy.scores
 ```
 
-To spread the _names_ _values_ pairs out into a wide data frame, we use the
-`pivot_wider()` command. 
+To spread the _names_ _values_ pairs out into a wide data frame, effectively converting back to the original data frame, we use the `pivot_wider()` command. The wide format is less memory intensive, but also more difficult to use for data exploration and analysis.
 
 ```{r}
 # Turn the Homework/Score pair of columns into one column per factor level of Homework
 tidy.scores %>% pivot_wider( names_from=Homework, values_from=Score )
 ```
 
-
-Often times, the long format of the data is most helpful for graphing or doing
-data analysis. Because of this, we often refer to this as the *tidy* form of the
-data. Hadley has a nice article about messy data vs tidy data and his [article](https://vita.had.co.nz/papers/tidy-data.pdf)
-is well worth your time to read, although `dplyr` and `tidyr` have matured since
-he wrote this article. The main point can be summarized by:
+Why do we want to be able to quickly switch between these forms? We will often receive data in the wide format, easier to create and store, probably the most common way you have seen data presented before. The long format of the data is most helpful for graphing or doing data analysis, and as such is often referred to this as the *tidy* form of the data. Hadley has a nice article about messy data vs tidy data and his [tidydata article](https://vita.had.co.nz/papers/tidy-data.pdf). The article is well worth your time to read (especially those who think they will handle large data), although `dplyr` and `tidyr` have matured significantly since he wrote this article. The main point and core idea of **tidydata** can be summarized by:
 
 1. Each row in the data frame represents a single object.
 2. Each column represents an attribute that can be measured on every object.
 3. Every object type implicitly forms a table.
 
-In our grade book example, we could consider each *student* as on object and store
-the data with 1 row per student and columns for each attribute (homework score).
-Alternatively, the long form is a `Scores` data set stores the data with a single
-row representing a single score. If I have multiple sections of the course and
-some homeworks are not assigned to one course but are assigned to another, then
-the long form `Scores` would be the appropriate storage.
+In our grade book example, we could consider each *student* as on object and store the data with 1 row per student and columns for each attribute (homework score). Alternatively, the long form is a `Scores` data set stores the data with a single row representing a single score. If I have multiple sections of the course and some homework is not assigned to one course but are assigned to another, then the long form `Scores` would be the appropriate storage. This form can host many different sections, with different number of assignments and students, without the presence of any NA cells.
 
-Most of our graphing and data analysis procedures will expect the data to be in
-a long format, but for both data input and digital storage compression, we might
-have data given to us in a wide format. 
+Most of our graphing and data analysis procedures will expect the data to be in a long format, but for both data input and digital storage compression, we might have data given to us in a wide format.
 
-## Spreading a Single Column with `separate`
-It is common for data columns to contain multiple attributes. For example, a name
-column might contain both first and last names or a file name might contain
-multiple bits of information broken up by underscores. In the string manipulation
-chapter, we saw how to use `stringr::str_split()` to split strings. Now we'll
-apply this using the `tidyr::separate()` function.
+## separate() : Spreading a Single Column 
+
+It is common for data columns to contain multiple attributes. For example, a name column might contain both first and last names or a file name might contain multiple bits of information broken up by underscores. In the string manipulation chapter, we saw how to use `stringr::str_split()` to split strings. Now we'll apply this using the `tidyr::separate()` function.
 
 ```{r}
 grade.book %>% separate(name, sep='\\.', c('F.Name','L.Name'), remove = FALSE)
 ```
 
-
-
 ## Storing Data in Multiple Tables
-In many data sets it is common to store data across multiple tables, usually with
-the goal of minimizing memory used as well as providing minimal duplication of
-information so any change that must be made is only made in a single place. Recall
-the guiding idea that each *type* of object stored should result in its own table.
 
-To see the rational why we might do this, consider building a data set of blood
-donations by a variety of donors across several years. For each blood donation,
-we will perform some assay and measure certain qualities about the blood and the
-patients health at the donation. But should we contain the donor's address, phone
-number, and email address in the same data table that holds the information about
-the blood donated.
+In many cases it is common to store data across multiple tables, usually with the goal of minimizing memory utilization and reducing duplication of information. This also improves efficiency so that any change that must be made only need to be applied to a single data frame. To see the rational why we might do this, consider building a data set of blood donations by a variety of donors across several years. For each blood donation, an assay will be performed to measure certain blood parameters and gather patient health status, which may include critical blood related information such as their blood type. Additionally, information about the donor such as their address, phone number, email address, birth date, and sex at birth may be collected at the time of donation. 
 
-I would like to include additional information about the donor where that
-information doesn't change overtime. For example we might want to have
-information about the donor's birthdate, sex, blood type.  However, I don't want
-that information in _every single donation line_.  Otherwise if I mistype a
-birthday and have to correct it, I would have to correct it _everywhere_. For
-information about the donor, should live in a `donors` table, while information
-about a particular donation should live in the `donations` table.
+When storing this information, one may want to consider what types of properties are likely to be critical to blood donation process and what other information may be less critical and change less over time. We do not want all of the information stored in *every single donation line* of our data frame. For example, birthday is not a critical parameter of blood donation, and if we were to mistype birthday and have to correct it, we would have to correct it *everywhere* it is stored. Thus we might split information into two data tables, one for *donors* that includes the less critical patient information (address, phone number, email address, birth date, sex at birth, social security number for unique identification, etc), and a second table *donations* that includes the important blood donation information (blood parameters, blood type, date of blood draw, patient status, etc). An important item when storing information in different data frames is to ensure the data has an identifying column, often referred to as an accession or **key**. Maybe this is a donor identification number, which allows us to mask their information in the donations table, but we can refer back to the donor table when necessary. 
 
-Furthermore, there are many Jeffs and Dereks in the world and to maintain a unique
-identifier (without using Social Security numbers) I will just create a `Donor_ID`
-code that will uniquely identify a person.  Similarly I will create a `Blood_ID`
-that will uniquely identify a blood donation.
+Lets consider what these two data tables might look like below. First we make a `donors` table that stores the less critical information about the blood donation. This information may not change very often, nor is it vital to the blood donation and blood transfusion process.
 
 ```{r, echo=FALSE}
-Donors <- tribble(
-~Donor_ID, ~Name, ~Blood_Type,  ~Birthday, ~Street, ~City, ~State,
- 'D1','Derek', 'O+','1976-09-17','7392 Willard', 'Flagstaff','AZ',
- 'D2','Jeff',  'A-','1974-06-23', '873 Vine',    'Bozeman',  'MT',
- 'D3','Aubrey','O+','1976-09-17','7392 Willard', 'Flagstaff','AZ')
-```
-```{r}
-Donors
+donors <- tribble(
+  ~Donor_ID, ~Name, ~Birthday, ~Street, ~City, ~State,
+  'D1','Robert','1969-09-17','7392 Willard', 'Williams','AZ',
+  'D2','Corey','1971-06-23', '873 Vine',    'Phoenix',  'AZ',
+  'D3','Dawn','1986-09-17','1211 Birch', 'Flagstaff','AZ')
+donors
 ```
 
+The second data table `donations` stores the critical blood information. This is the table we could refer to when we need to know about the blood that was donated, such as when we are preparing to use the blood in a transfusion. This includes required information that must be tested and checked at each blood donation. Even though an item like blood type is not going to change per donor, this information is stored in this table as it is critical to the blood transfusion process. Although decision on which tables to store information on could differ, I hope this example is showing you how one might make decisions on where to store data and what information should be stored in different tables. My thinking here was "critical to transfusion" against "unlikely to change and not critical to transfusion". Maybe since blood type does not change, a decision to make it part of the donors table could be made. However, this is such a critically important part of the transfusion process, it should be tracked carefully.
 
 ```{r, echo=FALSE}
-Blood_Donations <- tribble( 
-   ~Blood_ID, ~Donor_ID, ~Date, ~Hemoglobin, ~Systolic,  ~Diastolic,
-'B_1','D1','2017-04-14', 17.4, 120, 79,
-'B_2','D1','2017-06-20', 16.5, 121, 80,
-'B_3','D2','2017-08-14', 16.9, 145, 101,
-'B_4','D1','2017-08-26', 17.6, 120, 79,
-'B_5','D3','2017-08-26', 16.1, 137, 90)  
-```
-```{r}
-Blood_Donations 
+donations <- tribble(
+  ~Blood_ID, ~Donor_ID, ~Date, ~Blood_Type, ~Hemoglobin, ~Systolic,  ~Diastolic,
+  'B_1','D1','2017-04-14', 'O+', 17.4, 120, 79,
+  'B_2','D1','2017-06-20', 'O+',16.5, 121, 80,
+  'B_3','D2','2017-08-14', 'B+', 16.9, 145, 101,
+  'B_4','D1','2017-08-26', 'O+', 17.6, 120, 79,
+  'B_5','D3','2017-08-26', 'AB-', 16.1, 137, 90)  
+donations
 ```
 
-If we have a new donor walk in and give blood, then we'll have to create a new
-entry in the `donors` table as well as a new entry in the `donations` table. If
-an experienced donor gives again, we just have to create a new entry in the
-donations table.
+How does the donation process now work? If we have a new donor walk in and give blood, then we'll have to create a new entry in the `donors` table as well as a new enter the blood information at time of draw in the `donations` table. If an experienced donor volunteers again, we just have to create a new entry in the `donations` table. Given this data structure, we can now easily create new donations and store donor information. In the event that we need to change something about a donor, such as a change in their address, there is only *one* place this change needs to be recorded.
 
-Given this data structure, we can now easily create new donations as well as
-store donor information. In the event that we need to change something about a
-donor, there is only _one_ place to make that change.
-
-However, having data spread across multiple tables is challenging because I often
-want that information squished back together.  For example, if during routine
-testing we discover that a blood sample is HIV positive. Then we *need* to be
-able to join the blood donations table to the donors table in some sensible
-manner.
+By storing data spread across multiple tables a new challenge becomes having to having to put all information back together. For example, if during routine testing a blood sample tests positive for a known blood disease. Then we *need* to be able to join the donations table to the donors table in some sensible manner. This will then allow us to identify the donor, their contact information, and rely this critical information back to them. Depending on the severity of the disease identified, this also allows the user blood to be tracked and any previous donations tested and possibly removed. The process of combining information across multiple data tables is known as **joining**.
 
 ## Table Joins
 
-There are four different types of joins: outer, left, right, and inner joins.
-Consider the following example tables. Here we consider that there is some *key*
-column that is common to both tables.
+There are four different types of joins: outer, left, right, and inner joins. Consider the following example tables. Here we consider that there is  **key** column that allows identification of how information between tables should be properly identified.
 
 | Join Type            | Result                           |
 |:--------------------:|:---------------------------------|
-|  `inner_join(A,B)`   | Include rows if the key value is in *both* tables.   |
+|  `inner_join(A,B)`   | Include rows if the **key** value is in *both* tables.   |
 |  `left_join(A,B)`    | Include all rows of `A`, and if the match in `B` doesn't exist, just insert a `NA`. |
 |  `right_join(A,B)`   | Include all rows of `B`, and if the match in `A` doesn't exist, just insert a `NA`. |    
 |  `full_join(A,B)`    | Include all rows of `A` and `B` and if the necessary match doesn't exist, insert `NA` values. |
 
 
-For a practical example
+For a practical example and small example, lets create two data tables that have slightly different information. The data table `A` contains only "a, b, c", while the data table `B` contains "b, c, d".  They have some information in common, and each contains unique information not found in the other. The names of the columns are the same, and we are considering "ID" the key column.
+
 ```{r}
 A <- tribble(
   ~ID, ~x,
@@ -284,93 +213,88 @@ B <- tribble(
   'd', 59)
 ```
 
+Below shows great examples of how the four different types of joins work. Running them one at a time might be useful. Depending on the type of join chosen, more or less information is retained. Choosing the correct join can be very important to the process, where a `full_join()` will always ensure all data is transferred, but can return a new data table with a lot of NA entries.
 
 ```{r, message=FALSE}
-# only include rows with IDs that are in both tables
+# inner: only include rows with IDs that are in both tables
 inner_join(A,B)
 
-# All the rows in table A, insert NA if the B info is missing
+# left: All the rows in table A, insert NA if the B info is missing
 left_join(A,B)
 
-# All the rows in table B, insert NA if the A info is missing
+# right: All the rows in table B, insert NA if the A info is missing
 right_join(A,B)
 
-# All the rows possible, insert NA if the matching info is missing
+# full: All the rows possible, insert NA if the matching info is missing
 full_join(A,B)
 ```
 
+Consider the case where we have a data frame of observations of fish and a separate data frame that contains information about lake (perhaps surface area, max depth, pH, etc). We want to store them as two separate tables so that when we have to record a lake level observation, the new information needs only be stored in *one* place. This decreases the chance that a copy/paste error is made.
 
-Consider the case where we have a data frame of observations of fish and a separate
-data frame that contains information about lake (perhaps surface area, max depth,
-pH, etc). I want to store them as two separate tables so that when I have to record
-a lake level observation, I only input it *one* place. This decreases the chance
-that I make a copy/paste error. 
-
-To illustrate the different types of table joins, we'll consider two different
-tables.
 ```{r}
-# tibbles are just data.frames that print a bit nicer and don't automatically
-# convert character columns into factors.  They behave a bit more consistently
-# in a wide variety of situations compared to data.frames.
 Fish.Data <- tibble(
   Lake_ID = c('A','A','B','B','C','C'), 
-  Fish.Weight=rnorm(6, mean=260, sd=25) ) # make up some data
+  Fish.Weight=rnorm(6, mean=260, sd=25) ) # this is making up random data
 Lake.Data <- tibble(
-  Lake_ID = c(    'B','C','D'),   
+  Lake_ID = c('B','C','D'),   
   Lake_Name = c('Lake Elaine', 'Mormon Lake', 'Lake Mary'),   
   pH=c(6.5, 6.3, 6.1),
   area = c(40, 210, 240),
   avg_depth = c(8, 10, 38))
-```
-
-```{r}
 Fish.Data
 Lake.Data
 ```
 
-Notice that each of these tables has a column labeled `Lake_ID`. When we join
-these two tables, the row that describes lake `A` should be duplicated for each
-row in the `Fish.Data` that corresponds with fish caught from lake `A`.
+Notice that each of these tables has a column labeled `Lake_ID` that serves as the **key**. When we join these two tables, the row that describes lake `A` should be duplicated for each row in the `Fish.Data` that corresponds with fish caught from lake `A`.
 
 ```{r}
 full_join(Fish.Data, Lake.Data)
 ```
 
-Notice that because we didn't have any fish caught in lake `D` and we don't have
-any Lake information about lake `A`, when we join these two tables, we end up
-introducing missing observations into the resulting data frame.
-
+Notice that because we didn't have any fish caught in lake `D` and we do not have any Lake information about lake `A`, when we join these two tables, we end up introducing missing observations into the resulting data frame. If we wanted on focus on data that must include information regarding the first, we might choose to do a `left_join()` providing the `Fish.Data` as the first argument. I retained the output message where R identified that the key column was "Lake_ID".
 
 ```{r}
 left_join(Fish.Data, Lake.Data)
 ```
 
+Maybe though the information we are interested in must require us to know both something about the fish caught AND the lake information. The `inner_join()` function works more like an intersection from set theory, and requires that information be found in both the `Fish.Data` and `Lake.Data` tables.
+
 ```{r}
 inner_join(Fish.Data, Lake.Data)
 ```
 
-The above examples assumed that the column used to join the two tables was named
-the same in both tables. This is good practice to try to do, but sometimes you
-have to work with data where that isn't the case. In that situation you can use
-the `by=c("ColName.A"="ColName.B")` syntax where `ColName.A` represents the name
-of the column in the first data frame and `ColName.B` is the equivalent column
-in the second data frame.
+The above examples assumed that the column used to join the two tables was named the same in both tables. This is good practice to try to do, but sometimes you have to work with data where this is not the case. In that situation you can use the `by=c("ColName.A"="ColName.B")` syntax where `ColName.A` represents the name of the column in the first data frame and `ColName.B` is the equivalent column in the second data frame. For example, lets change the `Lake_ID` column in the `Fish.Data` table to be called `Lake` instead.
 
-Filtering joins are a useful trick when programming to help discover which rows
-would be included. In particular, I often want to know which rows would be
-dropped or don't have a corresponding match.
+```{r}
+Lake.Data <- Lake.Data %>% rename(Lake = Lake_ID)
+Lake.Data
+```
+
+Now, when we join the data, it is not obvious what the **key** column should be.
+
+```{r, error=TRUE}
+inner_join(Fish.Data, Lake.Data)
+```
+
+Notice the error indicates the data tables have no variables in common. In this case, we could rename columns, but in certain situations, it is easier to identify the **key** columns with R syntax.
+
+```{r}
+inner_join(Fish.Data, Lake.Data, by = c("Lake_ID" = "Lake"))
+```
+
+### Less Common Joins - Filter Joins
+
+Filtering joins is a useful trick when programming to help discover which rows would be included. In particular, we often want to know which rows would be dropped or do not have a corresponding match. The two joins described below are sometime referred to as **filter joins**
 
 | Join Type            | Result                           |
 |:--------------------:|:---------------------------------|
 |  `semi_join(A,B)`   | All the rows in `A` that have a match in `B`.   |
-|  `anti_join(A,B)`    | All the rows in `A` that **dont** have a match in `B`. |
+|  `anti_join(A,B)`    | All the rows in `A` that **do not** have a match in `B`. |
 
 
 ## Row-wise Calculations
-Finally, the combination of `pivot_longer` and `pivot_wider` allows me to do some
-very complex calculations across many columns of a data set.  For example, I
-might gather up a set of columns, calculate some summary statistics, and then
-join the result back to original data set.  
+
+Finally, the combination of `pivot_longer` and `pivot_wider` allows us to do some very complex calculations across many columns of a data set.  For example, we might gather up a set of columns, calculate some summary statistics, and then join the result back to original data set. Referring back to the grade book examples, lets pivot the homework scores, calculate the mean across each homework, then join the students "average score" back to the original data frame.
 
 ```{r}
 grade.book %>%
@@ -380,42 +304,48 @@ grade.book %>%
   left_join( grade.book, . )
 ```
 
-While this works, it is not very convenient. Instead, we'd like to have some
-mechanism for doing rowwise calculations. 
-This is actually not as easy as you might expect because data frames are stored
-in memory to make column-wise operations fast.
+While this works, it is not the most convenient syntax. Instead, we'd like to have some mechanism for doing row-wise calculations. This is actually not as easy as you might expect because data frames are stored in memory to make column-wise operations fast. R does supply some useful functions that allow us to perform vectorized calculations quickly across a broad set of dimensions (many of these functions also work for arrays - which are 3 or more dimensions - not just rows and columns)
 
-### Using base `apply()` function
-One solution is to use the base R function `apply()`. 
-The `apply()` function applies a function to each row or column (`MARGIN=1` or
-`MARGIN=2` respectively). 
+### apply() : perform operations across a dimension
+
+One solution is to use the base R function `apply()`. The `apply()` function applies a given function across a given dimension.  Commonly, `MARGIN=1` refers to the row or `MARGIN=2` the column, but this could be extended to the 3rd, 4th, or further dimensions in more complex mathematical settings. The most common way these functions are applied are usually to numerical constructs like matrices and arrays. Here is a simple matrix.
 
 ```{r}
 A <- matrix(1:6, ncol=3)  # Make a matrix of 2 rows, 3 columns
 A
-
-apply(A, MARGIN = 1, FUN=sum) # Apply sum() function to rows (MARGIN=1)
-apply(A, MARGIN = 2, FUN=sum) # Apply sum() function to columns (MARGIN=1)
-
 ```
 
-
-So to add a row calculation, we just need to put together `select` and `apply`
-statements.
+We could apply the sum across the rows.
 
 ```{r}
-#     new.col.name             columns              function
-grade.book %>%
-  mutate(., HW.avg = select(., HW.1:HW.4) %>% apply(1, mean)) %>%
-  print() # this print is just to show you can keep the pipeline going...
+apply(A, MARGIN = 1, FUN=sum) # Apply sum() function to rows (MARGIN=1)
 ```
 
-But this pipeline inside a mutate command is a little cumbersome. The command
-`dplyr::rowwise()` causes subsequent actions to be performed _rowwise_ instead
-of the default of _columnwise_. `rowwise()` is actually a special form of
-`group_by()` which creates a unique group for each row. The function
-`dplyr::c_across()` allows you to use all the `select` style tricks for
-picking columns.
+Similarly, apply the sum across the columns
+
+```{r}
+apply(A, MARGIN = 2, FUN=sum) # Apply sum() function to columns (MARGIN=1)
+```
+
+What if we want to do this with the grade book example? The problem there is that we have mixtures of data types, specifically there is a string column storing the names. This will cause a problem if we try to apply an  item across the rows.
+
+```{r}
+apply(grade.book, 1, mean)
+```
+
+Notice the warning specifically did not know how to handle the strings, so it returned NA for each calculation. We might also want to introduce some syntax to add the new calculated column to the grade book.  Here is a second solution to find each students average homework score and join that information back to the original `grade.book` data frame. This takes advantage of some of the verbs introduced in Chapter 4. Specifically, we `select` the columns we are interested in and then and `apply` the mean to each row. By included this within a `mutate`, we can then add a new column with a given name to the original data frame.
+
+```{r}
+grade.book %>%
+  #  new column name        columns      function applied
+  mutate(HW.avg = select(., HW.1:HW.4) %>% apply(1, mean))
+```
+
+There is two new tricky syntax items we have not previously seen above.  First, there is a pipeline inside a pipeline. The pipe within the mutate command allowed this to flow nicely, but is certainly some tricky syntax for newcomers, but shows the power of how the tidyverse operates. Secondly, the `select()` command was not sure what it was selecting from, as again it was a very inside a verb (select within a mutate). In this case, we were able to introduce the `.` notation, which specifically says to select from one layer above - in this case - one layer above was the data frame `grade.book`.
+
+### rowwise - supply commands to each row
+
+The pipeline inside a mutate command was a little cumbersome. The command `dplyr::rowwise()` causes subsequent actions to be performed to each row instead of the default which is always *column-wise*. Using the command `rowwise()` is actually a special form of `group_by()` which creates a unique group for each row. There are several ways we could then execute the calculation, of which some other versions are given in the R chunk below, but commented about. Instead, we can reduce the necessary syntax even further using the function `dplyr::c_across()`, which allows us to use all the `select` style tricks for picking columns. Specifically, the executed command below groups up all rows using `rowwise()`, the executes the creation of a new column (`mutate()`) by calculate the mean `c_across()` any column that starts with the character string "HW". I hope this is starting to impress upon you that the more tidyverse your learn, although syntax is becoming more complex, the possibilities are endless!
 
 ```{r}
 # grade.book %>%
@@ -431,233 +361,177 @@ grade.book %>%
   mutate( HW.avg = mean( c_across(starts_with('HW'))) )  # Average all HW... columns 
 ```
 
-Because `rowwise()` is a special form of grouping, to exit the row-wise
-calculations, call `ungroup()`.
+As a note, because `rowwise()` is a special form of grouping, if we wanted to continue the pipeline from above, we would need to exit the row-wise calculations using `ungroup()`. This is likely only to occur in certain niche situations, so it is not introduced further.
 
+### rowSums and rowMeans
 
-Finally, there are some base R functions `rowSums()` and `rowMeans()` that
-calculate sums and means across rows. They are actually quite fast, but don't
-allow the user to input an arbitrary function.
+Finally, there are some operations that are so common to apply to rows or columns that base R has made them available and easy to use. Operations like finding the sum or mean of a row/column are so common, we can use the base R functions `rowSums()` and `rowMeans()`. There are synonyms `colSums()` and `colMeans()`, but as discussed, columns are the default operation and not as tricky. The functions `rowSums()` and `rowMeans()` calculate sums and means across rows and are actually quite fast. These functions are highly specific though, so the previous syntax discussed above was given because the more complex tidyverse syntax allow the user to input any arbitrary function and are not restricted to just sums or means.
 
 ```{r}
 grade.book %>%
   mutate( HW.avg = rowMeans(across(starts_with('HW'))) )
 ```
 
-Somewhat confusingly, in this statement we used `across` which applies a
-transformation to multiple columns, while the `c_across()` is designed to
-work with the `rowwise()` command.
-
-
-I prefer the solution that uses the `select(., cols) %>% apply(1, fun)` 
-chain inside the `mutate` command because I don't have do an additional
-`rowwise()`  `ungroup()` command in my pipeline.
+*Note:* somewhat confusingly, in this statement we used `across` which applies a transformation to multiple columns, while the `c_across()` is designed to work with the `rowwise()` command. Some items could still be refined, but the tidyverse is almost constantly being updated!
 
 ## Exercises  {#Exercises_DataReshaping}
+
+Many of the exercises below build and solidify our data wrangling skills that rely on the use of operations taught in Chapter 4 and Chapter 7. This is a great time to review those chapters if you have not been using the syntax frequently. The exercises below have been written in a way that YOU must do all the data wrangling yourself - the time for providing lots of code to help you over the hump is over - your data science wrangling skills start now!
     
-1.  A common task is to take a set of data that has multiple categorical 
-    variables and create a table of the number of cases for each combination.
-    An introductory statistics textbook contains a dataset summarizing student
-    surveys from several sections of an intro class. The two variables of
-    interest for us are `Gender` and `Year` which are the students gender and
-    year in college.
-    a)  Download the dataset and correctly order the `Year` variable using the
-        following:
-        ```{r, eval=FALSE}
-        Survey <- read.csv('http://www.lock5stat.com/datasets/StudentSurvey.csv', na.strings=c('',' ')) 
-        ```
-    b)  Using some combination of `dplyr` functions, produce a data set with
-        eight rows that contains the number of responses for each gender:year
-        combination. Make sure your table orders the `Year` variable in the
-        correct order of `First Year`, `Sophmore`, `Junior`, and then `Senior`.
-        *You might want to look at the following functions: `dplyr::count` and*
-        *`dplyr::drop_na`.* 
-    c)  Using `tidyr` commands, produce a table of the number of responses in
-        the following form:
+### Exercise 1 {-}
+
+A common task is to take a set of data that has multiple categorical variables and create a table of the number of cases for each combination. An introductory statistics textbook contains a data set summarizing student surveys from several sections of an intro class. The two variables of interest are `Gender` and `Year` which are the students gender and year in college. *Note: you will need to refer to Chapter 4 and Chapter 7 for some of the operations needed below - this is a great time to review chapter 4!*
+
+**a)** Download the data set using the following:
+
+```{r, eval=FALSE}
+Survey <- read.csv('https://www.lock5stat.com/datasets2e/StudentSurvey.csv', na.strings=c('',' ')) 
+```
+
+**b)** Select the specific columns of interest **Year** and **Gender**
+
+**c)** Convert the **Year** column to factors and properly order the factors based on common US progression (FirstYear - Sophomore - Junior - Senior)
+
+**d)** Convert the **Gender** column to factors and rename them Male/Female.
+
+**e)** Produce a data set with eight rows and three columns that contains the number of responses for each gender:year combination. *You might want to look at the following functions: `dplyr::count` and `dplyr::drop_na`.*
+
+**f)** Pivot the table in part (e) to produce a table of the number of responses in the following form:
         
-        |   Gender    |  First Year  |  Sophmore  |  Junior   |  Senior   |
-        |:-----------:|:------------:|:----------:|:---------:|:---------:|
-        |  **Female** |              |            |           |           |  
-        |  **Male**   |              |            |           |           | 
+|   Gender    |  First Year  |  Sophomore  |  Junior   |  Senior   |
+|:-----------:|:------------:|:----------:|:---------:|:---------:|
+|  **Female** |              |            |           |           |  
+|  **Male**   |              |            |           |           | 
     
 
-2.  From the book website, there is a .csv file of the daily maximum temperature
-    in Flagstaff at the Pulliam Airport. The direction link is at:
-    [https://raw.githubusercontent.com/dereksonderegger/444/master/data-raw/FlagMaxTemp.csv](https://raw.githubusercontent.com/dereksonderegger/444/master/data-raw/FlagMaxTemp.csv)
-    a)  Create a line graph that gives the daily maximum temperature for 2005.
-        *Make sure the x-axis is a date and covers the whole year.*
-    b)  Create a line graph that gives the monthly average maximum temperature
-        for 2013 - 2015. *Again the x-axis should be the date and the axis*
-        *spans 3 years.*
+### Exercise 2 {-}
 
+From this book's GitHub there is a .csv file of the daily maximum temperature in Flagstaff at the Pulliam Airport. The link is: [https://raw.githubusercontent.com/BuscagliaR/STA_444_v2/master/data-raw/FlagMaxTemp.csv](https://raw.githubusercontent.com/BuscagliaR/STA_444_v2/master/data-raw/FlagMaxTemp.csv)
 
-3.  *Challenging!* We often are given data in a table format that is easy for a
-    human to parse, but annoying a program. In the following example we have
-    [data](https://github.com/dereksonderegger/444/raw/master/data-raw/US_Gov_Budget_1962_2020.xls) 
-    of US government expenditures from 1962 to 2015. (I downloaded this data from
-    https://obamawhitehouse.archives.gov/omb/budget/Historicals
-    (Table 3.2) on Sept 22, 2019.) 
-    Our goal is to end up with a data frame with columns for `Function`,
-    `Subfunction`, `Year`, and `Amount`. *We'll ignore the "On-budget" and*
-    *"Off-budget" distinction.*
-    a)  Download the data file, inspect it, and read in the data using the
-        `readxl` package.
-    b)  Rename the `Function or subfunction` column to `Department`.
-    b)  Remove any row with Total, Subtotal, On-budget or Off-budget. Also
-        remove the row at the bottom that defines what NA means.
-    c)  Create a new column for `ID_number` and parse the `Department` column
-        for it.
-    d)  If all (or just 2015?) the year values are missing, then the
-        `Department` corresponds to `Function` name. Otherwise `Department`
-        corresponds to the `Subfunction`. Create columns for `Function` and
-        `Subfunction`. *Hint: Directly copy `Department` to `Subfunction`.*
-        *Then using an `if_else()` statement to copy either `NA` or `Department`*
-        *to `Function` depending on if the 2015 column is an `NA` (use the*
-        *function `is.na()`). Once you have `Function` with either the `Function`*
-        *name or an `NA`, you can use the `tidyr::fill` command to replace the*
-        *NA values with whatever is on the row above. Check out the help files*
-        *to see how to use it.* 
-    e)  Remove rows that corresponded to the Function name that have no data.
-        *Hint, you can just check if the `2015` column is `NA`.*
-    f)  Reshape the data into four columns for Function, Subfunction, Year, and
-        Amount.
-    g)  Remove rows that have Amount value of `..........`.
-    h)  Make sure that Year and Amount are numeric. *Hint: it is OK to get rid*
-        *of the estimate rows for 2016+*
-    h)  Make a line graph that compares spending for National Defense, Health,
-        Medicare, Income Security, and Social Security for each of the years
-        2001 through 2015. *Notice you'll have to sum up the sub-functions*
-        *within each function.*
+**a)** Create a line graph that gives the daily maximum temperature for 2005. *Make sure the x-axis is a date and covers the whole year.*
 
-3. For this problem we will consider two simple data sets.
-    ```{r, eval=FALSE}
-    A <- tribble(
-      ~Name, ~Car,
-      'Alice', 'Ford F150',
-      'Bob',   'Tesla Model III',
-      'Charlie', 'VW Bug')
+**b)** Create a line graph that gives the monthly average maximum temperature for 2013 - 2015. *Again the x-axis should be the date and span 3 years.*
+
+### Exercise 3 {-} 
+
+For this problem we will consider two simple data sets.
+
+```{r, eval=FALSE}
+A <- tribble(
+  ~Name, ~Car,
+  'Alice', 'Ford F150',
+  'Bob',   'Tesla Model III',
+  'Charlie', 'VW Bug')
+
+B <- tribble(
+  ~First.Name, ~Pet,
+  'Bob',  'Cat',
+  'Charlie', 'Dog',
+  'Alice', 'Rabbit')
+```
+
+**a)** Combine the data frames together to generate a data set with three rows and three columns using `join` commands. 
+
+**b)** It turns out that Alice also has a pet guinea pig. Add another row to the `B` data set. Do this using either the base function `rbind`, or either of the `dplyr` functions `add_row` or `bind_rows`.
+
+**c)** Combine again the `A` and `B` data sets together to generate a data set with four rows and three columns using `join` commands.
+
+*Note: You may want to also try using `cbind` to address questions (a) and (c). Leave this as a challenge question and focus on the easier to use `join` functions introduced in this chapter.*
+
+### Exercise 4 {-} 
+
+The package `nycflights13` contains information about all the flights that arrived in or left from New York City in 2013. This package contains five data tables, but there are three data tables we will work with. The data table `flights` gives information about a particular flight, `airports` gives information about a particular airport, and `airlines` gives information about each airline. Create a table of all the flights on February 14th by Virgin America that has columns for the carrier, destination, departure time, and flight duration. Join this table with the airports information for the destination. Notice that because the column for the destination airport code doesn't match up between `flights` and `airports`, you'll have to use the `by=c("TableA.Col"="TableB.Col")` argument where you insert the correct names for `TableA.Col` and `TableB.Col`.
     
-    B <- tribble(
-      ~First.Name, ~Pet,
-      'Bob',  'Cat',
-      'Charlie', 'Dog',
-      'Alice', 'Rabbit')
-    ```
-    a)  Squish the data frames together to generate a data set with three rows
-        and three columns. Do two ways: first using `cbind` and then using one
-        of the `dplyr` `join` commands.
-    b)  It turns out that Alice also has a pet guinea pig. Add another row to
-        the `B` data set. Do this using either the base function `rbind`, or
-        either of the `dplyr` functions `add_row` or `bind_rows`.
-    c)  Squish the `A` and `B` data sets together to generate a data set with
-        four rows and three columns. Do this two ways: first using `cbind` and
-        then using one of the `dplyr` `join` commands. Which was easier to
-        program? Which is more likely to have an error.
-    
-4.  Data table joins are extremely common because effective database design
-    almost always involves having multiple tables for different types of objects.
-    To illustrate both the table joins and the usefulness of multiple tables we
-    will develop a set of data frames that will represent a credit card company's
-    customer data base. We will have tables for Customers, Retailers, Cards, and
-    Transactions.  Below is code that will create and populate these tables.
-    ```{r}
-    Customers <- tribble(
-      ~PersonID, ~Name, ~Street, ~City, ~State,
-      1, 'Derek Sonderegger',  '231 River Run', 'Flagstaff', 'AZ',
-      2, 'Aubrey Sonderegger', '231 River Run', 'Flagstaff', 'AZ',
-      3, 'Robert Buscaglia', '754 Forest Heights', 'Flagstaff', 'AZ',
-      4, 'Roy St Laurent', '845 Elk View', 'Flagstaff', 'AZ')
-    
-    Retailers <- tribble(
-      ~RetailID, ~Name, ~Street, ~City, ~State,
-      1, 'Kickstand Kafe', '719 N Humphreys St', 'Flagstaff', 'AZ',
-      2, 'MartAnnes', '112 E Route 66', 'Flagstaff', 'AZ',
-      3, 'REI', '323 S Windsor Ln', 'Flagstaff', 'AZ' )
-    
-    Cards <- tribble(
-      ~CardID, ~PersonID, ~Issue_DateTime, ~Exp_DateTime,
-      '9876768717278723',  1,  '2019-9-20 0:00:00', '2022-9-20 0:00:00',
-      '5628927579821287',  2,  '2019-9-20 0:00:00', '2022-9-20 0:00:00',
-      '7295825498122734',  3,  '2019-9-28 0:00:00', '2022-9-28 0:00:00',
-      '8723768965231926',  4,  '2019-9-30 0:00:00', '2022-9-30 0:00:00' ) 
-    
-    Transactions <- tribble(
-      ~CardID, ~RetailID, ~DateTime, ~Amount,
-      '9876768717278723', 1, '2019-10-1 8:31:23',    5.68,
-      '7295825498122734', 2, '2019-10-1 12:45:45',  25.67,
-      '9876768717278723', 1, '2019-10-2 8:26:31',    5.68,
-      '9876768717278723', 1, '2019-10-2 8:30:09',    9.23,
-      '5628927579821287', 3, '2019-10-5 18:58:57',  68.54,
-      '7295825498122734', 2, '2019-10-5 12:39:26',  31.84,
-      '8723768965231926', 2, '2019-10-10 19:02:20', 42.83) 
-    
-    Cards <- Cards %>% 
-      mutate( Issue_DateTime = lubridate::ymd_hms(Issue_DateTime),
-              Exp_DateTime   = lubridate::ymd_hms(Exp_DateTime) )
-    Transactions <- Transactions %>% 
-      mutate( DateTime = lubridate::ymd_hms(DateTime))
-    ```
-    a)  Create a table that gives the credit card statement for Derek. It should
-        give all the transactions, the amounts, and the store name. Write your
-        code as if the only initial information you have is the customer's name.
-        *Hint: Do a bunch of table joins, and then filter for the desired customer*
-        *name. To be efficient, do the filtering first and then do the table joins.*
-    b)  Aubrey has lost her credit card on Oct 15, 2019. Close her credit card at
-        4:28:21 PM and issue her a new credit card in the `Cards` table.
-        *Hint: Using the Aubrey's name, get necessary CardID and PersonID and save*
-        *those as `cardID` and `personID`. Then update the `Cards` table row that*
-        *corresponds to the `cardID` so that the expiration date is set to the time*
-        *that the card is closed. Then insert a new row with the `personID` for*
-        *Aubrey and a new `CardID` number that you make up.* 
-    c)  Aubrey is using her new card at Kickstand Kafe on Oct 16, 2019 at
-        2:30:21 PM for coffee with a charge of $4.98. Generate a new transaction
-        for this action. 
-        *Hint: create temporary variables `card`,`retailid`,`datetime`, and*
-        *`amount` that contain the information for this transaction and then*
-        *write your code to use those. This way in the next question you can just*
-        *use the same code but modify the temporary variables. Alternatively, you*
-        *could write a function that takes in these four values and manipulates the*
-        *tables in the GLOBAL environment using the `<<-` command to assign a result*
-        *to a variable defined in the global environment. The reason this is OK is*
-        *that in a real situation, these data would be stored in a database and we*
-        *would expect the function to update that database.*
-    d)  On Oct 17, 2019, some nefarious person is trying to use her OLD credit
-        card at REI. Make sure your code in part (c) first checks to see if the
-        credit card is active before creating a new transaction. Using the same
-        code, verify that the nefarious transaction at REI is denied.
-        *Hint: your check ought to look something like this:*
-        ```{r, eval=FALSE}
-        card <- '9876768717278723'
-        retailid <- 2
-        datetime <- ymd_hms('2019-10-16 14:30:21')
-        amount <- 4.98
-        
-        # If the card is currently valid, this should return exactly 1 row.
-        Valid_Cards <- Cards %>% 
-          filter(CardID == card, Issue_DateTime <= datetime, datetime <= Exp_DateTime)
-        
-        # If the transaction is valid, insert the transaction into the table
-        if( nrow(Valid_Cards) == 1){
-          # Some code to insert the transaction
-        }else{
-          print('Card Denied')
-        }
-        ```
-    e)  Generate a table that gives the credit card statement for Aubrey. It
-        should give all the transactions, amounts, and retailer name for both
-        credit cards she had during this period.
+### Exercise 5 {-}
+
+Data table joins are extremely common because effective database design almost always involves having multiple tables for different types of objects. To illustrate both table joins and the usefulness of multiple tables we will develop a set of data frames that will represent a credit card company's customer data base. We will have tables for Customers, Retailers, Cards, and Transactions.  Below is code that will create and populate these tables.
+
+```{r}
+Customers <- tribble(
+  ~PersonID, ~Name, ~Street, ~City, ~State,
+  1, 'Derek Sonderegger',  '231 River Run', 'Flagstaff', 'AZ',
+  2, 'Aubrey Sonderegger', '231 River Run', 'Flagstaff', 'AZ',
+  3, 'Robert Buscaglia', '754 Forest Heights', 'Flagstaff', 'AZ',
+  4, 'Roy St Laurent', '845 Elk View', 'Flagstaff', 'AZ')
+
+Retailers <- tribble(
+  ~RetailID, ~Name, ~Street, ~City, ~State,
+  1, 'Kickstand Kafe', '719 N Humphreys St', 'Flagstaff', 'AZ',
+  2, 'MartAnnes', '112 E Route 66', 'Flagstaff', 'AZ',
+  3, 'REI', '323 S Windsor Ln', 'Flagstaff', 'AZ' )
+
+Cards <- tribble(
+  ~CardID, ~PersonID, ~Issue_DateTime, ~Exp_DateTime,
+  '9876768717278723',  1,  '2019-9-20 0:00:00', '2022-9-20 0:00:00',
+  '5628927579821287',  2,  '2019-9-20 0:00:00', '2022-9-20 0:00:00',
+  '7295825498122734',  3,  '2019-9-28 0:00:00', '2022-9-28 0:00:00',
+  '8723768965231926',  4,  '2019-9-30 0:00:00', '2022-9-30 0:00:00' ) 
+
+Transactions <- tribble(
+  ~CardID, ~RetailID, ~DateTime, ~Amount,
+  '9876768717278723', 1, '2019-10-1 8:31:23',    5.68,
+  '7295825498122734', 2, '2019-10-1 12:45:45',  25.67,
+  '9876768717278723', 1, '2019-10-2 8:26:31',    5.68,
+  '9876768717278723', 1, '2019-10-2 8:30:09',    9.23,
+  '5628927579821287', 3, '2019-10-5 18:58:57',  68.54,
+  '7295825498122734', 2, '2019-10-5 12:39:26',  31.84,
+  '8723768965231926', 2, '2019-10-10 19:02:20', 42.83) 
+
+Cards <- Cards %>% 
+  mutate( Issue_DateTime = lubridate::ymd_hms(Issue_DateTime),
+          Exp_DateTime   = lubridate::ymd_hms(Exp_DateTime) )
+Transactions <- Transactions %>% 
+  mutate( DateTime = lubridate::ymd_hms(DateTime))
+```
+
+**a)** Create a table that gives the credit card statement for Derek. It should give all the transactions, the amounts, and the store name. Write your code as if the only initial information you have is the customer's name. *Hint: Do a bunch of table joins, and then filter for the desired customer name. To be efficient, do the filtering first and then do the table joins.*
+
+**b)** Aubrey has lost her credit card on Oct 15, 2019. Close her credit card at 4:28:21 PM and issue her a new credit card in the `Cards` table. *Hint: Using the Aubrey's name, get necessary CardID and PersonID and save those as `cardID` and `personID`. Then update the `Cards` table row that corresponds to the `cardID` so that the expiration date is set to the time that the card is closed. Then insert a new row with the `personID` for Aubrey and a new `CardID` number that you make up.*
+
+**c)** Aubrey is using her new card at Kickstand Kafe on Oct 16, 2019 at 2:30:21 PM for coffee with a charge of $4.98. Generate a new transaction for this action. *Hint: create temporary variables `card`,`retailid`,`datetime`, and `amount` that contain the information for this transaction and then write your code to use those. This way in the next question you can just use the same code but modify the temporary variables. Alternatively, you could write a function that takes in these four values and manipulates the tables in the GLOBAL environment using the `<<-` command to assign a result to a variable defined in the global environment. The reason this is OK is that in a real situation, these data would be stored in a database and we would expect the function to update that database.*
+
+**d)** On Oct 17, 2019, some nefarious person is trying to use her OLD credit card at REI. Make sure your code in part (c) first checks to see if the credit card is active before creating a new transaction. Using the same code, verify that the nefarious transaction at REI is denied. *Hint: your check ought to look something like this:*
+
+```{r, eval=FALSE}
+card <- '9876768717278723'
+retailid <- 2
+datetime <- ymd_hms('2019-10-16 14:30:21')
+amount <- 4.98
+
+# If the card is currently valid, this should return exactly 1 row.
+Valid_Cards <- Cards %>% 
+  filter(CardID == card, Issue_DateTime <= datetime, datetime <= Exp_DateTime)
+
+# If the transaction is valid, insert the transaction into the table
+if( nrow(Valid_Cards) == 1){
+  # Some code to insert the transaction
+}else{
+  print('Card Denied')
+}
+```
+
+**e)** Generate a table that gives the credit card statement for Aubrey. It should give all the transactions, amounts, and retailer name for both credit cards she had during this period.
   
-5.  The package `nycflights13` contains information about all the flights that
-    arrived in or left from New York City in 2013. This package contains five
-    data tables, but there are three data tables we will work with. The data
-    table `flights` gives information about a particular flight, `airports`
-    gives information about a particular airport, and `airlines` gives
-    information about each airline. Create a table of all the flights on
-    February 14th by Virgin America that has columns for the carrier,
-    destination, departure time, and flight duration. Join this table with
-    the airports information for the destination. Notice that because the
-    column for the destination airport code doesn't match up between `flights`
-    and `airports`, you'll have to use the `by=c("TableA.Col"="TableB.Col")`
-    argument where you insert the correct names for `TableA.Col` and `TableB.Col`.
+### Exercise 6 {-}
 
+**Challenging!** We often are given data in a table format that is easy for a human to parse, but annoying a program. In the following example we can download such data from the book's GitHub at this [link](https://github.com/BuscagliaR/STA_444_v2/raw/refs/heads/main/data-raw/US_Gov_Budget_1962_2020.xls), which provides US government expenditures from 1962 to 2015. (Data available from [ObamaWhiteHouse](https://obamawhitehouse.archives.gov/omb/budget/Historicals), Table 3.2, downloaded Sept 22, 2019.) Our goal is to end up with a data frame with columns for `Function`, `Subfunction`, `Year`, and `Amount`. *We will ignore the "On-budget" and "Off-budget" distinction.*
 
+**a)** Download the data file, inspect it, and read in the data using the `readxl` package.
+
+**b)** Rename the `Function or subfunction` column to `Department`.
+
+**c)** Remove any row with Total, Subtotal, On-budget or Off-budget. Also remove the row at the bottom that defines what NA means.
+
+**d)** Create a new column for `ID_number` and parse the `Department` column for it.
+
+**e)** If all (or just 2015?) the year values are missing, then the `Department` corresponds to `Function` name. Otherwise `Department` corresponds to the `Subfunction`. Create columns for `Function` and `Subfunction`. *Hint: Directly copy `Department` to `Subfunction`. Then using an `if_else()` statement to copy either `NA` or `Department` to `Function` depending on if the 2015 column is an `NA` (use the function `is.na()`). Once you have `Function` with either the `Function` name or an `NA`, you can use the `tidyr::fill` command to replace the NA values with whatever is on the row above. Check out the help files to see how to use it.*
+
+**f)** Remove rows that corresponded to the Function name that have no data. *Hint, you can just check if the `2015` column is `NA`.*
+
+**g)** Reshape the data into four columns for Function, Subfunction, Year, and Amount.
+
+**h)** Remove rows that have Amount value of `..........`.
+
+**i)** Make sure that Year and Amount are numeric. *Hint: it is OK to get rid of the estimate rows for 2016+*
+
+**j)** Make a line graph that compares spending for National Defense, Health, Medicare, Income Security, and Social Security for each of the years 2001 through 2015. *Notice you'll have to sum up the sub-functions within each function.*
