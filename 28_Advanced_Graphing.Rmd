@@ -34,7 +34,7 @@ There are several cases where it is reasonable to need to take several possibly 
 
 Claus O. Wilke wrote a lovely [book](https://clauswilke.com/dataviz/) about data visualization and also wrote an R package to help him tweak his plots. One of the functions in his `cowplot` package is called `plot_grid()` and it takes in any number of plots and lays them out on a grid. Below we use the `iris` and `trees` data sets to create several visualizations of different types. Notice that the graphs are stored to objects for further use. Once we have all information prepared in the manner we would like to display it, we arrange these graphs together as a single output using the `plot_grid()` function.
 
-```{r, fig.height=4, fig.align='center'}
+```{r, fig.height=4, fig.align='center', fig.height=4}
 P1 <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species)) + 
   geom_point(size=3) + theme(legend.position='bottom') 
 P2 <- ggplot(trees, aes(x=Height, y=Volume, color=Girth)) + 
@@ -49,7 +49,7 @@ cowplot::plot_grid(P1, P2, P3, P4)
 
 Notice that the graphs are by default are arranged in a 2x2 grid. We could adjust the number or rows/columns using the `nrow` and `ncol` arguments. Furthermore, alphabetic labels can be added to each graph so that the figure caption can refer to "Panel A" or "Panel B" as appropriate using the `labels` option. Below creates a single row of three graphics, which shows we can place the graph objects in any order desired, and then adds labels for easy discussion of the graphic.
 
-```{r, fig.height=3, fig.align='center'}
+```{r, fig.height=3, fig.align='center', fig.height=4}
 cowplot::plot_grid(P2, P3, P4, nrow=1, labels=c('A','B','C'))
 ```
 
@@ -57,7 +57,7 @@ cowplot::plot_grid(P2, P3, P4, nrow=1, labels=c('A','B','C'))
 
 In his book, [R Graphics Cookbook](https://r-graphics.org) Winston Chang produced a really nice function to address this issue, but just showed the code. The folks that maintain the R miscellaneous package `Rmisc` kindly included his function. The benefit of using this function is that you can control the layout to not be on a grid.  For example we might want two graphs side by side, and then the third be short and wide underneath both. By specifying different numbers and rows and columns in the layout matrix (below `my.layout`), we can highly customize how the plot looks.
 
-```{r, fig.align='center'}
+```{r, fig.align='center', fig.height=4}
 # Define where the first plot goes, etc.
 my.layout <- matrix(
   c(1, 2, 2,
@@ -79,7 +79,7 @@ While `ggplot` typically produces reasonable choices for the values of each axis
 
 For an individual graph, we might want to set the color manually.  Within `ggplot` there are a number of functions of the type `scale_XXX_` where the `XXX` is either `color` or `fill`, and can be followed by many arguments such as `manual`, `continuous`, `gradient`, etc. Below we change the color of the `P1` and `P2` objects created above using the manual and gradient schemes.
 
-```{r}
+```{r, fig.height=4}
 cowplot::plot_grid(
   P1 + scale_color_manual( values=c('red','navy','forestgreen') ),
   P2 + scale_color_gradient(low = 'blue', high='red')
@@ -88,7 +88,7 @@ cowplot::plot_grid(
 
 Notice that when we used `scale_color_manual`, we were required to provide a color argument for each species of iris. Similarly, when we used `scale_color_gradient`, which works with a continuous number scale, we provide a `low` scale value and `high` scale value, where a blue to red gradient was then produced. For continuous scales for fill and color, there is also a `scale_XXX_gradient2()` function which results in a *divergent* scale where you set the `low` and `high` values as well as the midpoint color and value. There is also a `scale_XXX_grandientn()` function that allows you to set as many colors as you like to move between. Here is an example of gradient2 and gradient.
 
-```{r}
+```{r, fig.height=4}
 cowplot::plot_grid(
   P2 + scale_color_gradient2(low = 'black', mid='white', midpoint=14, high='red' ),
   P2 + scale_color_gradientn(colors = c('red','orange','yellow','green','blue','violet') )
@@ -108,28 +108,28 @@ Using the `ggplot::scale_XXX_brewer()` functions, we can easily work with the pa
 
 **Qualitative** palettes employ different hues to create visual differences between classes. These palettes are suggested for nominal or categorical data sets.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=5}
 # Palettes for Qualitative Categories
 RColorBrewer::display.brewer.all(type='qual')
 ```
 
 **Sequential** palettes progress from light to dark. When used with interval data, light colors represent low data values and dark colors represent high data values.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=6}
 # Palettes for Ordered Categories
 RColorBrewer::display.brewer.all(type='seq')
 ```
 
 **Diverging** palettes are composed of darker colors of contrasting hues on the high and low extremes and lighter colors in the middle.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=5}
 # Ordered Categories with a neutral value in the middle
 RColorBrewer::display.brewer.all(type='div')
 ```
 
 To use one of these palettes, we just need to pass the palette name to `scale_color_brewer` or `scale_fill_brewer`
 
-```{r}
+```{r, fig.height=4}
 cowplot::plot_grid(
   P1 + scale_color_brewer(palette='Dark2'),
   P4 + scale_fill_brewer(palette='BrBG') 
@@ -140,7 +140,7 @@ cowplot::plot_grid(
 
 The package `viridis` sets up a few different color palettes that have been well thought out and maintain contrast for people with a variety of color-blindness types as well as being converted to grey-scale. These can be excellent accessibility options when working with large diverse groups.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=4}
 palettes <- c('viridis','magma','inferno','plasma','cividis')
 Plots <- list()
 for(i  in 1:length(palettes)){
@@ -158,7 +158,7 @@ Rmisc::multiplot(plotlist = Plots )
 
 Similar to the RColorBrewer functions, these color palettes can be added to a graph by using a synonymous `color_viridis_` functions, which can have either discrete (`_d`) or continuous (`_c`) scaling.
 
-```{r}
+```{r, fig.height=4}
 cowplot::plot_grid(
   P1 + scale_color_viridis_d(option='plasma'),      # _d for discrete
   P2 + scale_color_viridis_c(option='viridis'))   # _c for continuous
@@ -172,7 +172,7 @@ There are many other packages that manage color palettes, a few other options in
 
 For continuous variables, we need to be able to control what tick and grid lines are displayed.  In `ggplot`, there are *major* and *minor* breaks. Major breaks are typically labeled and show as large tick marks on the axis line. Minor breaks appear as either smaller axis ticks or opaque lines on the graph and are found in-between the major breaks. All axis information can be customized. Below provides a method for setting major (`breaks`) and `minor_breaks` on a ggplot graph. Minor and major ticks are shown in the default `ggplot` theme as white background lines. We can also introduce our own axis labels within the `_continuous` functions, where the y-axis has been labeled either "big" or "small".
 
-```{r, fig.height=3}
+```{r, fig.height=4}
 ggplot(trees, aes(x=Height, y=Volume)) + geom_point(size = 3) +
   scale_x_continuous( breaks=seq(65,90, by=5), minor_breaks=65:90) +
   scale_y_continuous( breaks=c(30,50), labels=c('small','big') ) 
@@ -182,7 +182,7 @@ ggplot(trees, aes(x=Height, y=Volume)) + geom_point(size = 3) +
 
 A very common task to improving graphs is the readability of our axes, which can be modified by changing the text size, font, and style. These can be added within the `theme()` command to add `axis.text` and `axis.title` arguments, which take on the `element_text` command for augmenting the text output. Each element text can take on their own size, face, and family (font), allowing for customization of text output, most importantly ensuring readability and accessibility. Axis text refers to the labels of the tick marks, while axis title refers to the labels given to each axes (below, Height and Volume).
 
-```{r, fig.height=3}
+```{r, fig.height=4}
 ggplot(trees, aes(x=Height, y=Volume)) + geom_point(size = 3) +
   scale_x_continuous( breaks=seq(65,90, by=5), minor_breaks=65:90) +
   scale_y_continuous( breaks=c(30,50), labels=c('small','big') ) +
@@ -204,7 +204,7 @@ Although the code block above may seem to be getting out of hand and too large f
 
 For this example, lets create a ggplot graphic from the the `ACS` data of the `Lock5Data` package. The plot looks at information about `Income` (in thousands of dollars) against an individuals `Age`. A simple ggplot scatter graph of the data might be prepared using the following.
 
-```{r, fig.height=3}
+```{r, fig.height=4}
 # Import the data and drop any zeros
 data('ACS', package='Lock5Data') 
 ACS <- ACS %>%
@@ -215,7 +215,7 @@ ggplot(ACS, aes(x=Age, y=Income)) +
 
 Plotting the raw data results in an ugly graph because six observations dominate the graph and the bulk of the data (income < $\$100,000$) is squished together. One solution is to plot income on the $\log_{10}$ scale. Lets plot the log10 data next to the original graph using a `plot_grid()` for easy comparison.
 
-```{r, fig.height=3}
+```{r, fig.height=4}
 cowplot::plot_grid(
   ggplot(ACS, aes(x=Age, y=Income)) +
     geom_point(),
@@ -226,7 +226,7 @@ cowplot::plot_grid(
 
 Although our changes to the log-scale worked well to see the trend of peak earning happening in a persons 40s and 50s, the scale is difficult for me to understand (what does $\log_{10}\left(X\right)=1$ mean here? Oh right, that is $10^{1}=X$ so that is the $\$10,000$ line). It would be really nice if we could do the transformation but have the labels on the original scale. Rather than changing the data, which was done in the above graph, we can use the `scale_y_log10()` function within our ggplot structure. This will create a graph on the log-scale, but retain the original data values. The `theme()` command and its options will be discussed in more detail below, but to accentuate how the log scaling works, darker minor tick colors were added.
 
-```{r, fig.height=3}
+```{r, fig.height=4}
 ggplot(ACS, aes(x=Age, y=Income)) +
   geom_point() +
   scale_y_log10(breaks=c(1,10,100),
@@ -250,7 +250,7 @@ This is another good time to remind you about how the escape character works in 
 
 Lets start with an example of labeling all aspects of a graph: title, x-axis, y-axis, and on-graph text. The chunk below creates some random data and a best-fit line from the `lm()` command. A common task is to want to add the results of the model to the graph, which we have studied in the previous [Statistical Modeling](https://bookdown.org/rb76/444/statistical-models.html#accessor-functions) chapter. Once we have a nice graph with our best-fit line present, we will want to annotate the graph carefully. We have spent a significant amount of time above learning how to augment these annotations, but what if we have very specific units, need to include Greek letters, or generally use LaTeX expressions? The code below now includes four lines of code that allow for inclusion of LaTeX on our graphic.
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, fig.height=4}
 seed <- 7867
 N <- 20
 data <- data.frame(x=runif(N, 1, 10)) %>%    # create a data set to work with
@@ -278,7 +278,7 @@ First, notice the use of the double backslash operator within the character stri
 
 Another issue is how to add expression to a data frame. Unfortunately, neither `data.frame` nor `tibble` will allow a column of expressions, so instead we have store it as a character string and then introduce the conversion to LaTeX. Below creates three character strings using standard LaTeX syntax, and then converts the character string that represents the R expression. Finally, in `ggplot`, we tell the `geom_text` layer to parse the label and interpret it as an R expression. This is a bit of an advanced topic, but can be very useful if you want to add many LaTeX expressions to a graph.
 
-```{r}
+```{r, fig.height=4}
 foo <- data.frame( x=c(1,2,3), y=c(2,2,2) ) %>%
   # label is a TeX character string
   mutate( label1 = paste('$\\alpha$ = ', x) ) %>%
@@ -294,7 +294,7 @@ ggplot(foo, aes(x=x, y=y) ) +
 
 Many fine-tuning settings in `ggplot2` can be manipulated using the `theme()` function. In the log-scale example above, a theme was used to color the minor tick lines. There are a wide variety of theme options available, allowing a user to control nearly all aspects of the graphic that is output. This [link](https://ggplot2.tidyverse.org/reference/theme.html) will help you understand why I am not introducing them all in this section. One common task with a graph is creating a legend and a graph title. Below uses theme options to change the position and size of the graph title, and in the second panel the legend is shifted to below the graph instead of to the side. It is likely you might want to use these two options in the future, so without showing many different theme possibilities, the two examples below give the generic syntax and concept.
 
-```{r}
+```{r, fig.height=5}
 # Create line graphs from the ChickWeight data
 p1 <- ggplot(ChickWeight, aes(x=Time, y=weight, colour=Diet, group=Chick)) +
     geom_line() + labs(title='Chick Weight: Birth to 21 days')
@@ -322,19 +322,26 @@ Rmisc::multiplot( cols = 2,
 )
 ```
 
-**cowplot and ggthemes.**
+**cowplot.**
 
-```{r, fig.height=8}
+```{r, fig.height=4}
 Rmisc::multiplot( cols = 2,
-  p1 + cowplot::theme_cowplot() + labs(title='cowplot::theme_cowplot()'),
-  p1 + cowplot::theme_minimal_grid() + labs(title='cowplot::theme_minimial_grid'),
-  p1 + ggthemes::theme_stata() + labs(title='ggthemes::theme_stata()'),
-  p1 + ggthemes::theme_tufte() + labs(title='ggthemes::theme_tufte()'),
-  p1 + ggthemes::theme_economist() + labs(title='ggthemes::theme_economist()'),
-  p1 + ggthemes::theme_fivethirtyeight() + labs(title='ggthemes::theme_fivethirtyeight()'),
-  p1 + ggthemes::theme_excel_new() + labs(title='ggthemes::theme_excel_new()'),
-  p1 + ggthemes::theme_gdocs() + labs(title='ggthemes::theme_gdocs()')
-  )
+  p1 + cowplot::theme_cowplot() + labs(title='theme_cowplot()'),
+  p1 + cowplot::theme_minimal_grid() + labs(title='theme_minimial_grid')
+)
+```
+
+**ggthemes.**
+
+```{r, fig.height=6}
+Rmisc::multiplot( cols = 2,
+  p1 + ggthemes::theme_stata() + labs(title='theme_stata()'),
+  p1 + ggthemes::theme_tufte() + labs(title='theme_tufte()'),
+  p1 + ggthemes::theme_economist() + labs(title='theme_economist()'),
+  p1 + ggthemes::theme_fivethirtyeight() + labs(title='theme_fivethirtyeight()'),
+  p1 + ggthemes::theme_excel_new() + labs(title='theme_excel_new()'),
+  p1 + ggthemes::theme_gdocs() + labs(title='theme_gdocs()')
+)
 ```
 
 It is possible to change the theme for all plots within a document or modify specific aspect of the theme. Two of the common options are provided below, which can be added to the start of your Rmarkdown/R-script document and have the settings applied throughout. Some caution should be given in that these will change all graphs within a document, so only change these settings if you are sure you want to apply those changes throughout.
@@ -350,7 +357,7 @@ Plotly is a technical computing company that specializes in data visualization. 
 
 The simple version is that you can take a ggplot graph and pipe it into the `ggplotly` and it will be rendered into an interactive version of the graph.
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.height=4}
 P1 <- iris %>%
   ggplot(aes(y=Sepal.Length, x=Sepal.Width, color=Species)) +
   geom_point()
@@ -360,7 +367,7 @@ P1 %>% plotly::ggplotly()
 
 We can use the widgets to zoom in and out of the graph. Notice that as we hover over the point, it tells us the x/y coordinates. To add information to the hover-text, we just need to add a `text` aesthetic mapping to the plot. 
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.height=4}
 P1 <- iris %>%
   mutate(Obs_ID = row_number()) %>% 
   ggplot(aes(y=Sepal.Length, x=Sepal.Width, color=Species,

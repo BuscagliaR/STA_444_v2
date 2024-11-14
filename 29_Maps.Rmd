@@ -16,6 +16,8 @@ if( length(pkgs > 0)){
 knitr::opts_chunk$set(cache=FALSE)
 ```
 
+**CHAPTER IS STILL BEING EDITED**
+
 This chapter requires a lot of complex packages, some developed by individuals through their GitHub pages. Below are all packages used in this chapter, some of which require `devtool` installations from GitHub.
 
 ```{r, message=FALSE, warning=FALSE, results='hide'}
@@ -31,8 +33,6 @@ library(urbnmapr)
 #library(urbnthemes)
 library(leaflet)
 ```
-
-**CHAPTER IS STILL BEING EDITED**
 
 ## Introduction
 
