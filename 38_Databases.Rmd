@@ -1,0 +1,644 @@
+# Databases
+
+```{r, echo=FALSE}
+# Un-attach any packages that happen to already be loaded. In general this is unnecessary
+# but is important for the creation of the book to not have package namespaces
+# fighting unexpectedly.
+pkgs = names(sessionInfo()$otherPkgs)
+if( length(pkgs > 0)){
+  pkgs = paste('package:', pkgs, sep = "")
+  for( i in 1:length(pkgs)){
+    detach(pkgs[i], character.only = TRUE, force=TRUE)
+  }
+}
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+```{r, warning=FALSE, message=FALSE, cache=FALSE}
+library(tidyverse)
+library(readr)
+library(RSQLite)
+library(DBI)         # DataBase Interface Package
+library(dbplyr)      # dplyr with databases!
+```
+
+**CHAPTER IS STILL BEING EDITED**
+
+## Introduction
+
+Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/ElDmEwslJw0).
+
+As our data grows larger and is being updated more frequently, we need to stop 
+using static input files and instead learn to interact with databases. There are 
+a many reasons for using a database, but these are my favorite:
+
+1.  **Data Freshness** Because the database holds the definitive copy of the data, 
+    there isn't a problem of using a .csv file that is months (or years) old. That 
+    means my results are constantly being updated with new data. When working with
+    a team of individuals or applications that all have read/write access to the
+    data, there must be some program making sure data is not accidentally overwritten
+    or out of date.
+
+2.  **Non-Local Storage** Often we deal with databases that live on a computer that
+    we access via the internet. Because the data lives on the database and not my
+    computer, I don't have to  occupy gigabytes of space on my laptop to hold an 
+    out-of-date copy of the data. Furthermore, this allows us to interact with datasets
+    that are too large to even be held on my wimpy laptop.
+
+3.  **Application Reliability** Whenever I update the database, the action either 
+    happens or it doesn't and the database should never be left in an inconsistent 
+    state. As a result, financial transactions can be reliably processed over
+    unreliable connections and the worst that happens is that the transaction 
+    doesn't happen. For applications where the database is also on the same 
+    device, this reliability means that if the application (game!) is abruptly
+    ended, the game state isn't corrupted and we don't lose the user's whole
+    history.
+
+Fortunately, reading data with databases isn't too hard. If all we need to do is
+read table and calculate summary statistics, the `dbplyr` package allows us to 
+almost ignore that that data isn't locally stored. The great people at Rstudio 
+have created a 
+[great website](https://db.rstudio.com/overview/) 
+for reading data from databases using their `dbplyr` package.
+
+For updating a database, we'll need to learn a little SQL and learn how to pass 
+R variables into the SQL call and import the SQL result back into our R environment.
+
+
+## Establishing a Connection
+
+Databases should be run on a server that is ALWAYS on and available via an 
+internet connection. To connect to a database, we'll need to know the internet 
+address and be able to authenticate with a username/password combination.
+
+To demonstrate how a database works, we unfortunately need to have a live 
+database to connect to. In real situations this would already be done (probably 
+by somebody else) and you would just need to install some DataBase Interface (DBI) 
+package that will negotiate creating a connection between your R-session and the 
+database.
+
+```{r, eval=FALSE}
+# Normally, a database connection looks something like this:
+con <- DBI::dbConnect(RMariaDB::MariaDB(), 
+  host = "database.rstudio.com",
+  user = "hadley",
+  password = rstudioapi::askForPassword("Database password")
+)
+
+# For a Postgres database, it might look like this:
+con <- DBI::dbConnect(dbDriver("PostgresSQL"), dbname = "postgres",
+  host = "database.nau.edu", port = 5432,
+  user = "dls354", 
+  password = rstudioapi::askForPassword("Database password"))
+```
+
+However for this tutorial, we need to start up a data base before we can start 
+working with.
+
+```{r, cache=FALSE}
+# For our little toy example, we'll use a SQLite database file of the 
+# Credit Card Transactions example we explored previously.
+con <- DBI::dbConnect(RSQLite::SQLite(), dbname = 'data-raw/Transactions.db')
+```
+
+
+```{r, echo=FALSE, message=FALSE, cache=FALSE}
+# For the book, I want to always return the database to an initial state
+# So the code here will reset it.
+stem <- 'https://raw.githubusercontent.com/dereksonderegger/444/master/data-raw/CreditCard'
+stem <- 'data-raw/CreditCard'
+
+Cards        <- read_csv(paste(stem, 'Cards.csv',        sep='_'), 
+                         col_types = cols(CardID=col_character(),
+                                          PersonID=col_character()))
+Customers    <- read_csv(paste(stem, 'Customers.csv',    sep='_'),
+                         col_types = cols(PersonID=col_character()))
+Retailers    <- read_csv(paste(stem, 'Retailers.csv',    sep='_'),
+                         col_types = cols(RetailID=col_character()))
+Transactions <- read_csv(paste(stem, 'Transactions.csv', sep='_'),
+                         col_types = cols(CardID=col_character(),
+                                          RetailID=col_character()))
+
+# Because the EXTREMELY simple RSQLite database doesn't support dates natively,
+# we need to convert all the Date/Time values to be character strings. Notice
+# because they are sorted as Year-Month-Day Hour:Minute:Second, sorting will
+# still work.
+# convert the Dates to character strings 
+Cards <- Cards %>% 
+  mutate(Issue_DateTime = as.character(Issue_DateTime),
+         Exp_DateTime   = as.character(Exp_DateTime))
+Transactions <- Transactions %>%
+  mutate(DateTime = as.character(DateTime))
+
+# head(Customers)    # Key  is  PersonID
+# head(Cards)        # Keys are PersonID and CardID  
+# head(Transactions) # Keys are CardID and RetailID
+# head(Retailers)    # Key  is  RetailID
+
+# Critically, using the ID columns, we can take an individual transaction figure 
+# out what customer executed it. Finally I'll take these tables and load them into 
+# my RSQLite database.
+
+# Copy the tables to our newly set up database. The dbWriteTable() function is intended
+# for database examples and is NOT how you would in practice create a database.
+DBI::dbWriteTable(con, 'Cards', Cards, overwrite=TRUE,
+                  field.types=c(CardID='character',PersonID='character',
+                                Issue_DateTime='time',Exp_DateTime='time') )
+DBI::dbWriteTable(con, 'Customers', Customers, overwrite=TRUE,
+                  field.types=c(PersonID='character'))
+DBI::dbWriteTable(con, 'Retailers', Retailers, overwrite=TRUE,
+                  field.types=c(RetailID='character'))
+DBI::dbWriteTable(con, 'Transactions', Transactions, overwrite=TRUE,
+                  field.types=c(CardID='character', RetailID='character',
+                                DateTime='time'))
+
+rm(Cards, Customers, Retailers, Transactions)     # Remove all the setup except `con`
+```
+
+The `DBI` package has several functions that allow us to figure out what
+tables exist and what the columns are in a particular table.
+
+
+|  DBI Command   |  Description                    |
+|:--------------:|:--------------------------------|
+| `dbListTables()` | Returns the tables available in a database. |
+| `dbListFields()` | What columns are in a given table. |
+| `dbColumnInfo()` | Returns meta information about columns returned by a `dbGetQuery()` command. Only some databases support this function. SQLite does not.|
+
+
+```{r, cache=FALSE}
+DBI::dbListTables(con)               # What tables are present
+```
+There are four tables. The Customers table contains personal information about
+our customers. To see what columns are present, we can use the following:
+
+```{r, cache=FALSE}
+DBI::dbListFields(con, 'Customers')  # What columns are in Customers table
+```
+
+
+## Basic SQL Commands
+
+The traditional way to interact with a database is by using SQL syntax. SQL stands 
+for Structured Query Language and some understanding of SQL is mandatory for anyone 
+that interacts with databases.  There are many good introduction to SQL but we'll 
+cover a few basics here.
+
+### SELECT rows
+
+One way to run SQL commands on the remote database is to use the the `DBI` package 
+commands.
+There are several functions (`DBI::dbXXXXX()`)that will take a previously established 
+connection and a SQL command that is stored as a character string.
+
+|  DBI Command   |  Description                    |
+|:--------------:|:--------------------------------|
+| `dbGetQuery()` | Run a SELECT command and return the result. |
+| `dbExecute()`       | Run a SQL command that does not return a table (e.g. INSERT or UPDATE). The return value of this is the number of rows that were affected. |
+
+
+For example, we might want to select all the rows and columns from the `Transactions` table. 
+To do this, we would run the following SQL command.
+```{r, cache=FALSE}
+sql_cmd <- 'SELECT * FROM Transactions'        # Define a character string with SQL command
+transactions <- DBI::dbGetQuery(con, sql_cmd)  # Run the command
+transactions
+```
+
+We can examine the SQL command as follows:
+
+|  SQL Function    |  Description                                |
+|:----------------:|:--------------------------------------------|
+| `SELECT`         |  A keyword that denotes that the following is a *query*. |
+|  `*`             | A placeholder meaning all columns. This could be any column name(s). |
+| `FROM`           | A keyword indicating that whatever follows is the table (or tables) being selected from. Any table joins need to be constrained in the WHERE clause to tell us what columns need to match.  |
+| `WHERE`          | A keyword indicating the following logical statements will be used to filter rows. Boolean operators `AND`, `OR`, and `NOT` can be used to create complex filter statements. |
+
+
+Because Rstudio supports code chunks with different languages (including SQL), 
+you could  insert a SQL code chunk and have it appropriately run when knitting 
+the document together. To run this interactively, you are required to have the 
+output inline option set. (Preferences -> Rmarkdown -> Show output inline...)
+
+A `sql` chunk requires the `connection` to be defined and optionally a output
+variable name (`output.var`) to store the return value from the SQL call.
+
+```
+```{sql, connection=con, output.var='sql_output'}
+/* This is a SQL code chunk! */
+SELECT * from Customers
+```
+```
+
+```{sql, connection=con, output.var='sql_output', cache=FALSE}
+/* This is a SQL code chunk! */
+SELECT * from Customers;
+```
+```{r, cache=FALSE}
+# In further R chunks, I can refer to the output.var variable
+sql_output
+```
+
+
+*From here on out, I'll just note when I'm in an SQL chunk with a comment.*
+
+SQL SELECT statement often include table joins. Unfortunately you have to always 
+specify how to do the table joins and SQL won't default to using column names that
+are common to both tables. In the following code we use `Table.Column` notation
+to uniquely specify a table/column pair. Because SQL uses the dot in this manner,
+you should avoid using a dot in your R column names.
+
+In the following SQL command, the information about how to do the table joins
+is mixed up with the information about filtering for a particular customer. I find
+this more difficult to read than our usual dplyr joins.
+
+```{sql, connection=con, output.var='sqloutput', cache=FALSE}
+/* SQL Chunk */
+SELECT Customers.Name, Transactions.DateTime, Retailers.Name, Transactions.Amount
+  FROM Customers, Cards, Transactions, Retailers
+  WHERE Customers.PersonID    = Cards.PersonID       AND 
+        Cards.CardID          = Transactions.CardID  AND
+        Transactions.RetailID = Retailers.RetailID   AND
+        Customers.Name = 'Derek Sonderegger'
+```
+```{r, echo=FALSE}
+sqloutput
+```
+
+
+
+
+### INSERT a new Row
+To insert a row into a table, we need to specify the table to insert into as well as
+the values to be inserted. It is good practice to specify the column/value pair (as opposed
+to assuming the column order) using the following syntax.
+```{sql, connection=con, cache=FALSE}
+/* SQL Chunk */
+INSERT INTO Customers (PersonID, Name, Street, City, State)
+VALUES (5, 'John Smith', '2378 N Main St', 'Flagstaff', 'AZ');
+```
+
+
+### UPDATE a row
+Updating a row in the database is similar, but we need to specify which rows to 
+update. This is done by including a "WHERE" clause, which feels similar to the 
+`dplyr::filter()` function. The only major difference is that SQL uses the single `=`
+sign for both assignment and testing equality.
+
+```{sql, connection=con, output.var='sqlout_bar', cache=FALSE}
+/* SQL Chunk */
+UPDATE Customers
+SET Street = '5638 Daisy Ln', City='Mountainaire', State='AZ'
+WHERE PersonID = 3 AND Name='Robert Buscaglia'
+```
+
+In the WHERE statement, multiple test conditions must be separated by AND or OR conjunctions.
+
+```{sql, connection=con, output.var='sqloutput3', cache=FALSE}
+/* SQL Chunk */
+SELECT * from Customers
+```
+```{r, echo=FALSE}
+sqloutput3
+```
+
+
+## Passing R variables into SQL chunks
+
+Inevitably I would like to be able to create a SQL command that depends on some
+dynamic R variable. For example, perhaps I'd like to write a script that queries
+the user for a person's name and then prints out all the transactions associated 
+with the person. To do this, we need a mechanism to pass an R variable into the
+SQL command. 
+
+```{r, cache=FALSE}
+# In an R chunk, I've defined some object that I'd like to use in a SQL statement.
+CustomerName <- 'Derek Sonderegger'
+```
+
+```{sql connection=con, output.var='sqloutput4', cache=FALSE}
+/* Anything with a ? prepended will be                              *
+ * replaced with the R object of the same name.                     */
+SELECT * FROM Customers WHERE Name = ?CustomerName
+```
+```{r, echo=FALSE}
+sqloutput4
+```
+
+
+There are some additional situations where a simple character string substitution
+doesn't quite work because of how R interprets character strings. In particular,
+passing multiple strings won't work and even 
+
+<!-- A quick example of how the `glue` package is intended to work would be helpful here. -->
+<!-- The package `glue` is intended make it easy to combine R variables with character -->
+<!-- strings. -->
+
+For example, selecting a person by name requires the character string to be quoted, and
+some SQL databases have custom quotation syntax. So we'll use the `glue` package to
+decide what the appropriate quotation syntax is. The curly brackets tell
+`glue` that we want to work with R variable `customers` not the literal string.
+
+```{r}
+# R chunk
+customers <- c('Derek Sonderegger', 'Aubrey Sonderegger')  # This won't work
+customers <- '"Derek Sonderegger","Aubrey Sonderegger"'    # The single string will work
+```
+
+
+```{sql connection=con, output.var='sqloutput5', cache=FALSE}
+/* SQL Chunk */
+SELECT * FROM Customers WHERE Name IN (?customers)
+```
+```{r, echo=FALSE}
+sqloutput5
+```
+
+But unbelievably this doesn't return any rows, when it should return two. The 
+solution is to use the `glue` package which is facilitates squishing together
+character strings. We won't utilize this much for the rest of the chapter, but 
+users should know where to look for the 
+[solution](https://glue.tidyverse.org/reference/glue_sql.html).
+
+```{r}
+# R Chunk
+customers <- c('Derek Sonderegger', 'Aubrey Sonderegger')
+customer = glue::glue_sql("{customers*}", .con=con)
+```
+```{sql connection=con, output.var='sqloutput6', cache=FALSE}
+/* SQL Chunk */ 
+SELECT * FROM Customers WHERE name IN (?customer)
+```
+```{r, echo=FALSE}
+sqloutput6
+```
+
+
+These SQL statements can be whatever you'd like, and we can happily insert rows
+into tables as well.
+
+```{r}
+# R Chunk
+newCustomer <- c(4, 'Mike Wazowski', '1102 Main St, Apt A113', 'Phoenix', 'AZ')
+newCustomer <- glue::glue_sql('{newCustomer*}', .con = con)
+```
+```{sql connection=con, output.var='sql_chunk', cache=FALSE}
+/* SQL Chunk */
+INSERT INTO Customers (PersonID, Name, Street, City, State)
+VALUES(?newCustomer)
+```
+
+And this has happily inserted Mike into our `Customers` table.
+```{sql, connection=con, output.var='sqloutput7', cache=FALSE}
+/* SQL Chunk */
+SELECT * FROM Customers
+```
+```{r, echo=FALSE}
+sqloutput7
+```
+
+
+
+
+
+## Reading tables using `dbplyr`
+
+There are a lot of good things about SQL, but for database queries, I would 
+really like to pretend that the tables are in memory and use all of my favorite 
+`dplyr` tools and pipelines. This would mean that I don't have to remember all 
+the weird SQL syntax. However, the database interface `dbplyr` is ONLY intended 
+for queries and NOT for updating or inserting rows into the tables.
+
+The way this will work is that we will use the previously established database 
+connection `con` to create a virtual link between the database table and some 
+appropriately named R object.
+
+```{r, echo=FALSE}
+# I shouldn't have to do this, but I seem to need to.
+# con <- DBI::dbConnect(RSQLite::SQLite(), dbname = 'data-raw/Transactions.db')
+```
+```{r}
+# connect the database tables to similarly named objects in R
+Cards <-        tbl(con, 'Cards')
+Customers <-    tbl(con, 'Customers')
+Retailers <-    tbl(con, 'Retailers')
+Transactions <- tbl(con, 'Transactions')
+```
+
+However, this does NOT download the whole table into R.  Instead it grabs only a 
+couple of rows so that we can see the format. Notice that we don't know how many 
+rows are in the Transactions table.
+```{r}
+Transactions %>% head(3)
+# Transactions %>% tail(3)  # not supported because we haven't yet downloaded much information.
+```
+
+The guiding principle of `dbplyr` is to delay as much work for as long as possible 
+actually pulling the data from the database. The rational is that we spend a great 
+deal of time figuring out what the query should look like and too often we write a 
+query that accidentally downloads millions of lines of data and slows down our network 
+connection. Instead `dbplyr` returns just the first few rows of whatever query we are 
+working on until we finish the pipeline with a `collect()` command that will cause 
+us to download ALL of the query results and save them as a local `data.frame`.
+
+```{r, warning=FALSE, message=FALSE}
+CC_statement <- 
+  Customers %>% 
+  filter(Name == 'Derek Sonderegger') %>% select(PersonID) %>%
+  left_join(Cards) %>% left_join(Transactions) %>% left_join(Retailers) %>%
+  select(DateTime, Name, Amount) %>%
+  rename(Retailer = Name) 
+
+CC_statement
+```
+
+At this point, we *still* haven't downloaded all of the rows. Instead this is 
+still a *lazy* query. To actually download everything, we'll pipe this into the 
+`collect` function.
+
+```{r}
+CC_statement %>%
+  collect()
+```
+
+
+<!-- Next have an example where we need to do a mutate command and see when we need -->
+<!-- to throw the collect() statement into the pipeline. Emphasize that we want to  -->
+<!-- keep the collect() statement as far down the pipeline as possible. -->
+
+
+It can be fun to see what the SQL code that is being generated is.
+
+```{r}
+CC_statement %>% show_query()
+```
+
+The algorithm used to convert my `dplyr` statement into a SQL statement doesn't 
+mind nesting SQL statements and isn't the same as what I generated by hand, but 
+it works.
+
+
+
+## Programming Best Practices
+It is not uncommon for a package to work with one or more databases. There are
+a number of possible reasons to not hardcode a particular connection. For example,
+when developing an application, testing of the code should be done on a testing
+database and NOT the production database. Similarly, we might be developing
+an application we'll sell to different customers and you'd want to easily point
+your code to a different customer database.
+
+1.  As a result, even if you only expect to connect to a single database, you should
+    always write functions that access a database have a `connection` parameter. You
+    could provide a default, though.
+
+Because the database does not always live on the same computer the application
+is running on, the slowest component will be the transmission time between the
+application and database and minimizing the amount of data being transferred is
+hugely import. 
+
+2.  When doing queries, always leave as much work as possible on the database.
+    For using `dbplyr` that means delaying the `collect()` command as long as 
+    possible. Generally that means doing all the `join`, `filter`, and `summarise`
+    commands first, and then `collect()` the results. Because `mutate` commands
+    actually modify the data, which `dbplyr` won't do, those have to occur *after*
+    the `collect`.
+
+```{r}
+#' Get all the transactions for a given customer
+#' 
+#' @param {Name}{A string with customers First and Last name}
+#' @param {conn}{The database connection to be used}
+GetTransactions <- function(name, conn){
+  Cards <-        tbl(conn, 'Cards')         # Data still lives on the 
+  Customers <-    tbl(conn, 'Customers')     # database and we haven't
+  Retailers <-    tbl(conn, 'Retailers')     # yet transferred any info
+  Transactions <- tbl(conn, 'Transactions')
+  
+  Customers %>%                              # Everything is on the database
+    filter(Name == name) %>%                 #
+    left_join(Cards, by='PersonID') %>%      #
+    select(CardID) %>%                       #
+    left_join(Transactions, by='CardID') %>% #
+    left_join(Retailers, by='RetailID')  %>% #
+    select(DateTime, Amount, Name) %>%       #
+    collect() %>%                         # NOW it is on my application
+    mutate(DateTime = lubridate::ymd_hms(DateTime)) %>%  # add we can modify
+    return()
+}    
+```
+
+Now you can happily get all the transactions for a give person.
+```{r}
+GetTransactions('Derek Sonderegger', con)
+```
+
+
+
+
+
+
+The last step of a script should be to close the database connection.
+```{r}
+# Close our database connection when we are through...
+dbDisconnect(con)
+```
+
+## Exercises {#Exercises_DataBases}
+1.  In this exercise, you'll create a database containing the `nycflights13` data. 
+    Make sure that you've already downloaded the `nycflights13` package, but DO
+    NOT load the `nycflights13` package.
+    a. Create a SQLite database and connect to it using the following code: 
+        ```{r, eval=FALSE}
+        library(dplyr)
+        library(dbplyr)
+        # Start up a SQL-Lite database with the NYCFlights13 data pre-loaded
+        con <- dbplyr::nycflights13_sqlite( )
+        ```
+    b.  Through the `con` connection object, create links to the `flights` and 
+        `airlines` tables using the `tbl` command. DO NOT import the complete 
+        `flights` table. We want to delay downloading the data from the database as
+        long as possible!
+    c.  From the `flights` table, summarize the percent of flights with a 
+        departure delayed by more than 10 minutes for each airline. *Hint: make a 
+        new column of TRUE/FALSE or 1/0 values that indicate if the flight was late. 
+        Then take the average of that column.* Produce a table
+        that gives the airline name (not the abbreviation) and the percent of 
+        flights that are late.
+    d. Using the `dbDisconnect()` command to close the connection `con`. 
+
+
+2.  I have created a package that contains information for a hypothetical ski pass database
+    that could used by AZ Snowbowl. This example is inspired by consulting 
+    work that I did with Bridger Bowl just outside of Bozeman, MT. We have 5 tables, `Customers`,
+    `PassTypes`, `Passes`, `BlackOutDates` and `PatrolIssues`. After downloading the package
+    from GitHub, you should read the documentation for each of these tables. Furthermore,
+    there is a function `SkiPasses_sqlite()` that loads the information into a SQLite 
+    database.
+    ```{r, eval=FALSE}
+    devtools::install_github('dereksonderegger/SkiPasses')
+    library(SkiPasses)
+    con <- SkiPasses_sqlite()  # You might want to use refresh=TRUE here...
+    ```
+    a)  Go to the GitHub repository for this package at 
+        [https://github.com/dereksonderegger/SkiPasses](https://github.com/dereksonderegger/SkiPasses). 
+        Where would you expect the code that creates the data tables to live? 
+        Where would the documentation for the data tables be? Where is the 
+        documentation and code for the function `SkiPasses_sqlite()`? Notice that 
+        there is a `SkiPasses.db` file in the `inst/extdata/` directory. Poke 
+        around the package and check out the code for the `SkiPasses_sqlite()` 
+        function. What does the `refresh=TRUE` option do?
+    b)  Run the following code to see where the SQLite database file exists on 
+        your computer.
+        ```{r, eval=FALSE}
+        system.file("extdata", "SkiPasses.db", package = "SkiPasses")
+        ```
+    c)  Insert a new row into the `Customer` data table for yourself. Also insert 
+        a row in the `Passes` table for yourself getting a ski pass for the 
+        2020-2021 ski season. *Be sure you are inserting rows into the database
+        tables and not a local version you saved in your R environment.*
+    d)  Close your database connection and then reopen it. Write a SQL command to 
+        verify that you are still in the customer data table.
+    e)  Create a function that takes a `PassID` and date and returns either a TRUE or FALSE
+        value indicating if the pass authorizes the customer to ski for the day. Your function
+        should take the database connection, `PassID`, and `Date` as input parameters. The function
+        should ONLY access the database tables through the connection! Try to do as much
+        filtering on the database side as possible to reduce the amount of information being
+        transferred to your function. Demonstrate
+        your function working with both an authorized and unauthorized cases. *Hint: read 
+        the documentation of the `Passes` table to understand when a pass is valid. Your code
+        will need to identify if there is a valid pass (ie Date is between Start and Finish) and
+        assuming there is a valid pass, that `Date` is not one of the blackout dates for that pass.*
+    f) Create a graph visualizing the ages of the male and female customers.
+
+    
+3.  For this exercise, we'll start a SQLite database and see that the SQLite application 
+    stores the data in a very specialized file structure, which usually has a file 
+    extension of `.db` or `.sqlite`.
+    a. Create the SQLite database file in your current working directory using the following:
+        ```{r, eval=FALSE}
+        con <- DBI::dbConnect(RSQLite::SQLite(), dbname = "TestSQLiteFile.db")
+        
+        # Create a table using the iris data
+        dbWriteTable(con, 'IRIS', iris)
+        
+        dbListTables(con)         # What tables are available...
+        dbReadTable(con, "IRIS")  # Spit out the IRIS table
+        dbDisconnect(con)         # Close connection
+        ```
+    b)  Now check the files in your current working directory as there should now be a 
+        `TestSQLiteFile.db`. The SQLite file structure for data is extremely stable and 
+        works across platform types (Unix/Windows, 32/64 bit, big/little endian, etc).  
+        As such, it is a good file type choice for storing lots of data in a compact 
+        format across different systems (e.g. applications that work on a mobile 
+        device vs a computer). While you can open this file using a text editor, you 
+        will only see the table declaration of column names and types. The data rows 
+        that follow will not be readable.
+    c)  Close the file connection and then reconnect to the database. Confirm that
+        `IRIS` table is still present in the database.
+    d)  When you knit your Rmarkdown document, you might have trouble if you are
+        initializing the database each time you knit the document. To get around
+        this, you could either run your initialization code once by hand and then
+        comment out the initialization steps, or use the `eval=FALSE` code chunk
+        option. Comment on solution you chose to do.
+
+

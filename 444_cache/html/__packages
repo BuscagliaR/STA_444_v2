@@ -26,3 +26,12 @@ rnaturalearthdata
 rnaturalearthhires
 urbnmapr
 leaflet
+censusapi
+jsonlite
+tidycensus
+microbenchmark
+foreach
+faraway
+boot
+caret
+glmnet
