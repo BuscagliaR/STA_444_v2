@@ -22,25 +22,21 @@ library(testthat)
 library(usethis)
 ```
 
-**CHAPTER IS STILL BEING EDITED**
-
 ## Introduction
 
 Dr. Sonderegger's Video Companion: [Video Lecture](https://youtu.be/NZK2X46Me8M). 
 
-R packages are documented and consistent format for storing data, functions, documentation, and analysis. We use a consistent format so that other researchers (or ourselves in six months) know exactly where the raw data should be, where to find any functions that are written, and document the data cleaning process.
+R packages are a consistent format for storing data, functions, documentation, and analysis. We use a consistent format so that other researchers (or ourselves in six months) know exactly where the raw data should be, where to find any functions that are written, and document the data cleaning process. In principle, all of these steps could be accomplished by a single data file and a single analysis Rmarkdown file. However as projects get larger in scope, the number of data files, the complexity of data cleaning, and the number of people working with the data will grow. With more complexity, the need to impose structure to our work becomes critical.
 
-In principle, all of these steps could be accomplished by a single data file and a single analysis Rmarkdown file. However as projects get larger in scope, the number of data files, the complexity of data cleaning, and the number of people working with the data will grow. With more complexity, the need to impose order on it becomes critical.
+Even if the project is small, organizing work into a package structure provides a benefit. First, it forces us to keep data wrangling code organized and encourages documenting any functions created. Second, by separating the data wrangling code from the analysis, we are forced to think more deeply about data verification and exploratory data analysis, leading to a better understanding of how best to store the data. Finally, because all subsequent analysis will depend on the same tidy data, we make fewer mistakes in our application of cleaned data. This practice ensures that all analysis done in the project are properly rooted to a stored and documented tidy data set. Changing the data in our R package should subsequently feed forward to all other analysis steps, and the package holds within it properly documented changes to the data.
 
-Even if the project is small, organizing my work into a package structure provides a benefit. First, it forces me to keep my data wrangling code organized and encourages documenting any functions I create. Second, by separating the data wrangling step code from the analysis, I think more deeply about verification and initial exploration to understand how best to store the data. Finally, because all my subsequent analysis will depend on the same tidy data set, I make few mistakes where I cleaned the data correctly in one analysis, but forgot a step in another analysis.
+Developing an R package for any analysis more complicated than a homework assignment is a very useful habit to start forming early in a data science career. The start-up of a package is relatively simple and if the project grows, you will appreciate that you started within an organized structure. With connections to earlier chapters, such as the [GitHub Introduction](https://bookdown.org/rb76/444/github.html), packages can then be stored online and accessed easily on other terminals or by collaborators.
 
-I recommend using an R package for any analysis more complicated than a homework assignment because the start-up is relatively simple and if the project grows, you'll appreciate that you started it in an organized fashion.
-
-
+The objective of this chapter is to get the user to develop a simple R package and store the R package in an online repository, while exploring important ideas like documentation and unit testing. The chapter is structured to introduce all elements of a package before executing any code and work. It is strongly recommended that the reader review all sections in the order presented, providing a foundation for how packages operate, and culminating in the development of a demo package that should be built while reviewing the text. The exercises are constructed in such a way that all elements of a package are to be reviewed, executed, and then stored online for download through a public repository.
 
 ### Useful packages and books
 
-There are several packages that make life easier.
+There are several packages that make life easier. Each of these should be installed for proper development of all package requirements for this chapter.
 
 | Package    |         Description             |
 |:----------:|:--------------------------------|
@@ -49,45 +45,86 @@ There are several packages that make life easier.
 | `testthat` |  Quality Assurance tools         |
 | `usethis`  |  Automates repetitive tasks that arise during project setup and development, both for R packages and non-package projects. |
 
-
-Hadley Wickham has written a book on R packages that gives a lot more information than I'm giving here. The book is available [online](http://r-pkgs.had.co.nz).
-
+Hadley Wickham has written a book on R packages that gives a lot more information than is being given here. The book is available [online](http://r-pkgs.had.co.nz).
 
 ## Package Structure
 
+Packages have a structure to them, and whether we are building large complex multi-user projects or storing some work from class, we should familiarize ourselves with this structure and try to replicate it as much as possible.
+
 ### Minimal files and directories
+
+The structure here is initiated by R when a new package is created. These files are mandatory and often do not require significant editing unless changing specific details about the package.
 
 |  File/Directory   |                   Description                      |
 |:-----------------:|:---------------------------------------------------|
 | `DESCRIPTION` | A file describing your package. You **should** edit this at some point. |
-| `NAMESPACE`   | A file that lists all the functions and datasets available to users after loading the package. You **should not**  edit this by hand. |
-| `.Rbuildignore` | A list of files that shouldn't be included when the package is built. |
-| `R/`            | This directory contains documentation files for datasets. It also contains the R code and documentation for functions you create. I generally recommend one documentation file for each dataset, and one file for each function, although if you have several related functions, you might keep them in the same file. This directory can be empty, but it does have to exist. |
-| `man/`    | This contains the documentation (manual) files generated by `roxygen2`. You **should not** edit these as they will be rebuilt from the source R code in the `R/` directory. |
+| `NAMESPACE`   | A file that lists all the functions and data sets available to users after loading the package. You **should not**  edit this by hand. |
+| `.Rbuildignore` | A list of files that should not be included when the package is built. |
+| `R/`            | This directory contains documentation files for data sets AND the R code and documentation for functions. Generally it is recommended that one documentation file exist for each data set as well as one file for each function. If there exists several related functions, you might keep them in the same file (not recommended). This directory can be empty, but it must exist. |
+| `man/`    | This contains the documentation (manual) files generated by `roxygen2`. You **should not** edit these manually; they will be built from the source R code in the `R/` directory. |
 
 ### Optional Files and Directories
 
+The structures below are optional. Many of them should be included in most packages, but the package can be built even if these structures do not exist within the package.
+
 |  File/Directory   |                   Description                      |
 |:-----------------:|:---------------------------------------------------|
-| `data-raw/` | A directory where we store data files that are not `.RData` format. Usually these are `.csv` or `.xls` files that have not been processed. Typically I'll have R scripts in this directory that read in raw data, do whatever data wrangling and cleaning that needs to be done, and saves the result in the `data/` directory. Obnoxiously the documentation for the dataset does not live in this directory, but rather in the `R/` directory. |
-| `data/` |  A directory of datasets that are saved in R's efficient `.RData` format. Each file should be an `.RData` or `.Rda` file created by the `save()` containing a single object (with the same names as the file).  Anything in this directory will be loaded and accessible to the user when the package is loaded. While it isn't necessary for this directory to exist, it often does. |
-| `docs/` | A directory where any Rmarkdown analysis files that are especially time consuming and should not be executed each time the package is built. When I build a package for a data-analysis project, the reports I create go into this directory. |
-| `vignettes/` | A directory where Rmarkdown files should go that introduce how to use the package. When a package is built, then Rmarkdown files in this directory will also be rebuilt.  I generally don't make a vi|
-| `tests/` |  A directory for code used for package testing functions you've written.  |
+| `data-raw/` | A directory where we store data files that are not `.RData` format. Usually these are `.csv` or `.xls` files that have not been processed (raw). Typically an R script will be added to this directory along with raw data, where the script is used to 1) read in raw data, 2) perform data wrangling and cleaning, and 3) saves the result to the `data/` directory. Be mindful that documentation for the data set does *not* live in this directory, but rather in the `R/` directory. |
+| `data/` |  A directory of data sets that are saved in R's efficient `.RData` format. Each file should be an `.RData` or `.Rda` file created by the `save()` command. Anything in this directory will be loaded and accessible to the user when the package is loaded. While it is not necessary for this directory to exist, it almost always does. |
+| `docs/` | A directory where any Rmarkdown analysis files that are especially time consuming and should not be executed each time the package is built. When building a package for a data analysis projects, this often contains reports created showing execution of the package with particular data. RMD type files often exist in this directory, mixing analysis and discussion. |
+| `vignettes/` | A directory where Rmarkdown files should go that introduce how to use the package. When a package is built, then Rmarkdown files in this directory will also be rebuilt. A vignette is generally built for large projects, we will rely on documentation rather than vignettes (although many popular packages have vignettes).|
+| `tests/` |  A directory for code used for package testing functions. We will work through these concepts later in the chapter, and these files will be automatically created. We will add different unit tests to this directory.  |
 | `inst/`  |  Miscellaneous stuff. In particular `inst/extdata/` is where you might put data that is not in `.RData` format (Excel files and such) but you want it available to the users. Anything in the `inst/extdata` will be available to to user via `system.file('file.xls',package='MyAwesomePackage')` |
-| `src/`  |  A directory where C/C++, Fortran, Python, etc source code is stored.  |
-| `exec/` | A directory where executables you might have created from the source code should go. |
+| `src/`  | A directory where C/C++, FORTRAN, Python, etc source code is stored. ADVANCED topic.  |
+| `exec/` | A directory for executable files created from source code. ADVANCED topic. |
 
+## The DESCRIPTION file
 
-## Documenting 
+The DESCRIPTION file is generated from a template when we initialize a package, it is rare to write them by-hand. It is common practice though to double check the description file when disseminating an R package for use.  It is useful to go into this file and edit it at least once, although for the work within this chapter we should not have to make any changes. If you open the description file within your R package, you should see a script with text that looks like the following:
 
-The `man/` directory is where the final documentation exists, but the format that was initially established is quite unwieldy. To address this, the `roxygen2` package uses a more robust and modern syntax and keeps the function documentation with the actual code in the `R\` directory. The results in a process where we write the documentation in files in the `R/` directory and then run a `roxygen2` command to build the actual documentation files in the `man/` directory. To run this, use the `Build` tab and then `More -> Document`.
+```{r, eval=FALSE}
+Package: MyAwesomePackage
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "first.last@example.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: What license it uses
+Encoding: UTF-8
+LazyData: true  
+```
 
-Hadley Wickham has a more complete discussion of package documentation in a
-[vignette](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd.html) 
-for `roxygen2`. If/when the information in this chapter seems insufficient, that should be your next resource.
+Notice that the DESCRIPTION file provides information important to the development of the package. Specifically, it allows for some short naming conventions, a version tracker, the authors, a short description, and this is where any licensing (not discussed) would be present. Often you want to have your package include other libraries so that the packages are available to be used in any functions you use.  Here are three common ways to include other R packages and their level of dependence within your own R package:
 
-The documentation information is built in comments and so documentation lines always start with a `#'`. For both data sets and functions, the first couple of lines give the short title and description. 
+|  Package Dependency Type |                                  Description                |
+|:----------------------:|:------------------------------------------------------------|
+| `Depends` |  These packages are required to have been downloaded from CRAN and will be attached to the namespace when your package is loaded. If your package is going to be widely used, you want to keep this list as short as possible to avoid function name clashes (masking).  |
+| `Imports` |  These packages are required to be present on the computer, but will **not** be attached to the namespace.  Whenever you want to use them you must use then in one of your functions, you'll need to use `PackageName::FunctionName` syntax.  |
+| `Suggests` | These packages are not required. Often these are packages of data that are only used in the examples, the unit tests, or in a vignette. These are not loaded/attached by default. |
+
+To all these types of dependencies to a package, one can add lines to the description file as follows:
+
+```{r, eval=FALSE}
+Depends: magrittr              # strongly dependent - wont run without these!
+Imports: dplyr, ggplot2, tidyr # required
+Suggests: lme4                 # not required
+```
+
+In this mock example, a dependency was added to the `magrittr` package, which defines the `%>%` operator. However, `dplyr`, `ggplot2`, `tidyr`, and `lme4` packages are included in a slightly different manner, as they are less important to the execution of the mock package. For widely distributed packages, using `Imports` is the preferred way to utilize other packages in your code to avoid namespace problems. For example, because packages `MASS` and `dplyr` both have a `select()` function, it is advisable to avoid depending on `dplyr` just in case the user also has loaded the `MASS` package. Although this choice is useful to require less dependency in your package, it does require that any commands from the packages within the `Imports` sections must be used with the syntax `PackageName::FunctionName()` within all of the functions of your package. Although tedious, this reduces the risk of function conflicts. One way to get around this with a data analysis project/package is to leave the Depends/Imports/Suggests blank and load the required packages within an RMarkdown file that is presented in the `docs/` directory.
+
+## Documenting
+
+As we add elements to our package, whether that is data or a function, we will want to provide users with information related to the elements built into our packages. Several examples of documentation will be given below, so lets start with the more general technical details. First off, there are many different types of documentation that programming languages can use. Not all styles/syntax are the same, but the purpose is always to rely necessary information to the use. In R, we will follow a standard syntax for providing documentation and then use the `roxygen2` package to compile our script into documentation with corresponding functions or data sets.
+
+The `man/` directory is where final documentation exists. The format that was initially established was quite unwieldy. To address this, the `roxygen2` package uses a more robust and modern syntax and keeps the function documentation with the actual code in the `R\` directory. The results is a process where we write the documentation in scripts within the `R/` directory and then run a `roxygen2` command to build the actual documentation files in the `man/` directory. To execute the compiling of documentation, we will use the `Build` tab in RStudio and select the options `More -> Document`. We will execute some of this below with examples. Hadley Wickham has a more complete discussion of package documentation in a [vignette](https://cran.r-project.org/web/packages/roxygen2/vignettes/rd.html) for `roxygen2`. If/when the information in this chapter seems insufficient, that should be your next resource.
+
+### Common Documentation Structure
+
+The documentation of a function or data set is always built in comments of an R script. The syntax below shows how the comments must be ordered for them to be properly converted into documentation. Documentation lines always start with the syntax `#'`. For both data sets and functions, the first couple of lines give the short title and description. We will develop documentation below but will always follow this structure:
 
 ```{r}
 #' A short title
@@ -99,9 +136,11 @@ The documentation information is built in comments and so documentation lines al
 #' 
 ```
 
+It is possible to add much more information than just a short title and paragraph description, but this is a consistent structure that will always start our documentation. For functions, you will additionally need to explain different input and output parameters, as well as provide examples of the use of the function. For data sets, all variables within the data set must have brief descriptions (units, types, etc) as well as other information a user might want to be able to look up (such as the source of the data).
 
 ### Data Documentation
-Data set documentation should contain both general information about the context of the data as well as detailed information about the data columns. Finally the documentation should also include information about where the data came from, if it is available. The title and description are given in the first paragraphs of the description, but the format and source need some indication starting the sections.
+
+Data set documentation should contain both general information about the context of the data as well as detailed information about the data columns (variables). The documentation should also include information about the source of the data (especially if it is a publicly available source). The title and description are given in the first paragraphs of the description, but the format and source need some indication starting the sections. The below syntax is a minimal set of information for any data set.
 
 ```{r, eval=FALSE}
 #' A short title
@@ -119,16 +158,20 @@ Data set documentation should contain both general information about the context
 "DataSetName"
 ```
 
-There are a few other documentation sections that can be filled in. They will all be introduced using `@Section` notation.
+Notice that in the above documentation, we start with the static short title and paragraph descriptions. We then need to use some indicators for other elements, specifically in the above example we have the `@format` which is used to indicate the amount of data (i.e. how many rows and columns). There is then a section that is opened using `\describe` that acts as a placeholder for providing information for each variable in the data set. Every column, which relates to a different variable, should get a short description and the units. Without this information a user would not be able to understand the data in the set without an external source. The syntax ALWAYS ends with the name of the data set as the final line. This should correspond to the exact name that was exported using the data creation commands (`usethis` functions, introduced below).
+
+More indicators could be added above the data set name if necessary. There are a few other documentation sections that can be filled in. They will all be introduced using `@` notation similar to what was done for the format. Two common needs are the `@source` of the data, and the `@references` of the data. One might add these to the documentation syntax above, and they would like something like this.
+
 ```{r, eval=FALSE}
-#' @source This describes where the data came from
-#' @references If we need to cite some book or journal article.
+#' @source URL here (This describes where the data came from)
+#' @references Citations here (If we need to cite some book or journal article.)
 ```
 
-
+Notice that the documentation of the data has no direct link to the data set that was created. This file though contains only the documented information, which will be stored in the `\R` directory, and will link to the desired data set only through the "DataSetName" information. Consistency is important, and we sure ensure that when a data set is stored using the `usethis::use_data()` command, the name exported matches the name in the documentation!
 
 ### Documenting Functions
-Functions that you want other people to use need to be documentated. In particular, we need a general description of what the function does, a list of all function arguments and what they do, and what type of object the function returns. Finally, it is nice to have some examples that demonstrate how the function can be used.
+
+Functions that you want other people to use need to include documentation. In particular, we need a general description of what the function does, a list of all function arguments, and what type of object(s) the function returns. Finally, it is nice to have some examples that demonstrate how the function can be used. A generic syntax for a function within an R package is shown below.
 
 ```{r}
 #' Sum two numeric objects.
@@ -151,44 +194,52 @@ my.sum <- function( a, b ){
 }
 ```
 
-Each of the sections is self explanatory except for the `@export`. The purpose of this is to indicate that this function should be available to any user of the package. If a function is not exported, then it is available only to functions *within* the package. This can be convenient if there are multiple functions that help with the analysis but you don't want the user to see them because it is too much work to explain that they shouldn't be used.
+The documentation syntax is similar to that discussed with data sets. The first line is a short title, followed by a small paragraph description (notice the description can be more than one line). Finally, we introduce a few new indicators for important sections of a functions. First, we see that each input argument is documented with the indicator `@param`. Each argument of the function should have a corresponding `@param` line - this is critical for the user to understand how your function operates! Next, the `@return` indicator discusses what the function outputs. Sometimes there is a need to place many different output elements here, each with its own `@return` line. In this simple example, a small sentence is used to describe the output. The documentation continues with two examples of using the function after the `@examples` indicator. 
 
-Other regions that you might use: 
+Finally, and critically, the section ends with the indicator `@export`. The purpose of this is to indicate that this function should be available to any user of the package. Thus, we end the documentation by exporting the code below it as a function within our R package. It is possible that you may have functions (should still document them) that you do NOT want to be available to a user. We could create such functions within our R package by omitting the `@export` indicator. If a function is not exported, then it is available only to functions *within* the package and not made directly available to the user. This can be convenient if there are multiple functions that help with the analysis but you do not want the user to see them because it is too much work to explain that they should not be used. This is much more common than you might expect when building larger more complex R packages! Every function we will build in our classroom R packages should end with an `@export` indicator, followed by the code of the function you produced. These files are also stored in the `\R` directory, and when compiled, both the function AND the function documentation will be available within the package.
+
+As mentioned with data sets, there are often many other aspects of a function we want to indicate. Here are a few other common indicators that you might use: 
 
 * `@seealso` allows you to point to other resources 
     + on the web `\url{http://www.r-project.org}`
     + in your package `\code{\link{hello}}`
     + in another package `\code{\link[package]{function}}`
-* `@aliases alias_1 alias_2 ...` Other topics that when searched for will point to this documentation
-* `@author` This isn't necessary if the author is the same as the package author.
+* `@aliases alias_1 alias_2 ...` Other topics that when searched for will point to this documentation.
+* `@author` This is not necessary if the author is the same as the package author.
 * `@references` This is a text area to point to journal articles or other literature sources.
 
-
-
 ## Testing
-In any package that contains R-functions, we need to make sure those functions work correctly. In particular, as I am writing the function, I am building test cases that verify that my function does exactly what I claim it does. In particular, I want to save all of those simple test cases that I've thought about and automatically run them each time I re-build the package. 
 
-Moving from *ad-hoc* testing into a formalized *unit testing* results substantial improvements in your package and your code for a variety of reasons:
+In any package that contains functions, we want a system that helps us ensure those functions work correctly. In particular, we are not necessarily worried about the first time we write the function, but what happens to the functionality as we build in more complex pieces to our package. Therefore, it can be a very important practice that while we are writing a function, we should at the same time be building test cases that verify that our function does exactly what it claims to do. This might sound tedious, but it can save us a lot of work when something breaks down the line! In particular, we want to save all of the simple test cases that we have thought about and automatically run them each time we re-build the package. These test cases are then checked each time the package is built, and if we introduce an update that breaks the proper functionality, we will get an error. This is an important part of working on larger complex projects, and can save you a lot of time and grief especially when working within a group. Proper unit testing does not only save you from introducing a package breaking bug, but also would stop other collaborators from introducing one as well! 
 
-1. Cleaner functionality. Because unit testing requires you to think about how your code should respond in different instances, you think more clearly about what the appropriate inputs and outputs should be and as a result, you are less likely to have functions that do *WAY* too much and are difficult to test. Separate smaller functions are easier to write, easier to test, and ultimately more reliable.
+Moving from *ad-hoc* testing into a formalized *unit testing* results in substantial improvements in your package and your code for a variety of reasons:
 
-2. Robust code. With unit testing, it is easier to make changes and feel confident that you haven't broken previously working code. In particular, it allows us to capture weird edge cases and make sure they are always tested for.
+1. Cleaner functionality. Because unit testing requires you to think about how your code should respond in different instances, you think more clearly about what the appropriate inputs and outputs should be. As a result, you are less likely to have functions that do *WAY* too much and are difficult to test. Separate smaller functions are easier to write, easier to test, and ultimately more reliable.
+
+2. Robust code. With unit testing, it is easier to make changes and feel confident that you have not broken previously working code. In particular, it allows us to capture weird edge cases and make sure they are always tested for.
+
+### Setting up Unit Testing
+
+Once we have a package fully built, we can initialize unit testing by running the following command with the R package project folder. This can be done, just once, on a command line.
 
 ```{r, eval=FALSE}
 # To set up your package to use the testthat package run:
 usethis::use_testthat()
 ```
 
-What this command does is:
+This command gets sets up all the necessary structure for us to then develop our own unit tests within the package. Specifically, this command does the following:
 
 1. Creates a tests/testthat directory in the package.
 2. Adds `testthat` to the `Suggests` field in the DESCRIPTION.
 3. Creates a file `tests/testthat.R` that runs all your tests when R CMD check runs. 
 
-Next you create .R files in the `tests/testthat/` directory named `test_XXX.r`. In those files, you'll input your test code. 
+### Creating a Unit Test
 
-Recently, I had to utilize a truncated distribution and the `trunc` package didn't work for the distribution I needed, so I had to create my own version of the `trunc` package. So I made my own [trunc2](https://github.com/dereksonderegger/truncdist2) 
-package. However, I wanted to be absolutely certain that I was getting the correct answers, so I made some unit tests.  
+Once we have initialized testing, we need to write scripts to run the test each time the package is compiled. To do so, create .R files in the `tests/testthat/` directory named `test_XXX.r`. This naming convention is REQUIRED for the tests to execute automatically. The section `XXX` should be a very short description of the test that is going to be run, we will see this portion of the name while compiling. Once we have the R script prepared and in the proper file location, we can write several tests within the same script. It is good practice to make many `test_XXX.r` scripts, testing different key functionality of the function you have produced.
+
+### Writing a Unit Test
+
+With the R script setup and in the proper file location, the last thing to do is write the unit tests themselves. Below shows one set of unit tests written by Dr. Sonderegger for a package developed called [trunc2](https://github.com/dereksonderegger/truncdist2). It is not important to fully digest the package and its use, but the code below provides an excellent outline for how a unit test should be developed. Within the R package, Dr. Sonderegger wanted to ensure that the output he was getting was exactly the correct answers, so he developed unit tests. Here is one set of tests that are within his R package:  
 
 ```{r, eval=FALSE}
 # Check to see if I get the same values in Poisson distribution
@@ -206,9 +257,9 @@ test_that('Unrestricted Exponential values correct', {
 })
 ```
 
-The idea is that each `test_that()` command tests some functionality and each `expect_XXX()` tests some atomic unit of computing. I would then have multiple files, where each file is named `test_XXX` and has some organizational rational.
+First, this code would be saved within a script named `test_XXX.R`, which was discussed in the previous section. The idea is then fairly straightforward to follow. The `test_that()` command starts with a short string describing what is being tested. Within one set of tests (one R script), many different tests can be done that are all focused on particular functionality. Here, the code is specifically checking that the calculations from the package functions `dtrunc`, `ptrunc` and `qtrunc` are all properly calculated. So each test line starts with a description "... Values Correct.".
 
-The expectation functions give you a way to have your function calculate something and compare it to what you think should be the output. These functions start with `expect_` and throw an error if the expectation is not met. In the table below, the `a` and `b` represent expressions to be evaluated.
+Next, following the proper syntax shown above, the tests are executed. The idea is that each `test_that()` command tests some functionality and each `expect_XXX()` tests some atomic unit of computing. For the code given above, tests of the Poisson and Exponential distribution are conducted, ensuring that the true calculated values match between a hard-coded R solution and the package functions. We could then have multiple files, where each file is named `test_XXX` and has some organizational rational. There are many different tests available within the `testthat` package. Here are many common test units:
 
 |  Function        |          Description                      |
 |:----------------:|:------------------------------------------|
@@ -219,9 +270,9 @@ The expectation functions give you a way to have your function calculate somethi
 | `expect_true(a)`  | Does `a` evaluate to TRUE? |
 | `expect_false(a)` | Does `a` evaluate to FALSE?  |
 
-The `expect_true` and `expect_false` functions are intended as a catch-all for cases that couldn't be captured using one of the other expect functions.
+The expectation functions give you a way to have your function calculate something and compare it to what you think should be the output. These functions start with `expect_` and throw an error if the expectation is not met. In the table above, the `a` and `b` represent expressions to be evaluated. The `expect_true` and `expect_false` functions are intended as a catch-all for cases that couldn't be captured using one of the other expect functions. There are a few more `expect_XXX` functions available in Hadley's chapter on [testing](http://r-pkgs.had.co.nz/tests.html) in his R-packages book.
 
-There are a few more `expect_XXX` functions and you can see more detail in Hadley's chapter on [testing](http://r-pkgs.had.co.nz/tests.html) in his R-packages book.
+### Finalizing Testing
 
 Each test should cover a single unit of functionality and if the test fails, you should easily know the underlying cause and know where/how to find/fix the issue. Each test name should complete the sentence "Test that ..." so that when we run the unit testing and something fails, we know exactly which test failed and what the underlying problem is.
 
@@ -231,165 +282,194 @@ Now that we have the testing setup built, the work flow is simple:
 2. Test your package with `Ctrl/Cmd + Shift + T` or `devtools::test()`. This causes all of your functions to be re-created (thus capturing any new changes to the functions) and then runs the testing commands.
 3. Repeat until all tests pass and there are no new test cases to implement.
 
-
-## The DESCRIPTION file
-I never write the DESCRIPTION file from scratch, but rather it is generated it from a template when the package structure is initially created. It is useful to go into this file and edit it. 
-```{r, eval=FALSE}
-Package: MyAwesomePackage
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
-Encoding: UTF-8
-LazyData: true  
-```
-
-Often you want to have your package include other libraries so that the packages are available to be used in any functions you use. To do this, you'll add lines to the description file. 
-
-```{r, eval=FALSE}
-Depends: magrittr     
-Imports: dplyr, ggplot2, tidyr
-Suggests: lme4
-```
-
-In this example, I've included a dependency on the `magrittr` package, which defines the `%>%` operator, while `dplyr`, `ggplot2`, `tidyr`, and `lme4` packages are included in a slightly different manner.
-
-|  Package Dependency Type |                                  Description                |
-|:----------------------:|:------------------------------------------------------------|
-| `Depends` |  These packages are required to have been downloaded from CRAN and will be attached to the namespace when your package is loaded. If your package is going to be widely used, you want to keep this list as short as possible to avoid function name clashes.  |
-| `Imports` |  These packages are required be present on the computer, but will **not** be attached to the namespace.  Whenever you want to use them you must use then in one of your functions, you'll need to use `PackageName::FunctionName` syntax.  |
-| `Suggests` | These packages are not required. Often these are packages of data that are only used in the examples, the unit tests, or in a vignette. These are not loaded/attached by default. |
-
-For widely distributed packages, using `Imports` is the preferred way to utilize other packages in your code to avoid namespace problems. For example, because packages `MASS` and `dplyr` both have a `select()` function, it is advisable to avoid depending on `dplyr` just in case the user also has loaded the `MASS` package. However, this choice is annoying because I then have to use `PackageName::FunctionName()` syntax within all of the functions within your package.
-
-For a data analysis package, I usually leave the Depends/Imports/Suggests blank and just load whatever analysis packages I need in the RMarkdown files that live in the `docs/` directory.
-
-
-
-
 ## Sharing your Package
-The last step to a package is being able to share it with other people. We could either wrap up the package into a `.tar.gz` file or we could save the package to some version control platform like `GitHub`. For packages that are in a stable form and need to be available via `CRAN` or Bioconductor, then building a `.tar.gz` file is important. However when a package is just meant for yourself and your collaborators, I prefer to save the package to `GitHub`.
 
-I have several packages available on my `GitHub` account.  I have a repository 
-[https://github.com/dereksonderegger/TestPackage](https://github.com/dereksonderegger/TestPackage) that demonstrates a very simple package. To install this package, we can install it directly using the following:
+The last step to a package is being able to share it with other people. We could either wrap up the package into a `.tar.gz` file or we could save the package to some version control platform like `GitHub`. For packages that are in a stable form and need to be available via `CRAN` or Bioconductor, then building a `.tar.gz` file is important. However when a package is just meant for yourself and your collaborators, the preference is to save the package to `GitHub`.
+
+### GitHub
+
+I have several packages available on my [GitHub](github.com/BuscagliaR) account.  There exists a repository in my school account [https://github.com/DrBuscaglia/F23DemoPackage](https://github.com/DrBuscaglia/F23DemoPackage) that is a simple to build starting package, often used within a lecture of this chapter when I teach the course. If you view the repository on the web, notice that the repository contains all of the files exactly as they appear on your computer when you build an R package. To store a package on GitHub, you need only copy all files and folders within your R package project folder directly to the GitHub repository. Review how to do this manually in the [GitHub Introduction](https://bookdown.org/rb76/444/github.html) of this textbook, or check out the useful GUI [GitHub Desktop](https://desktop.github.com/download/).
+
+You can install the demo package using this command. This provides the proper syntax for downloading any R package stored within a GitHub repository.
 
 ```{r, eval=FALSE}
-devtools::install_github('dereksonderegger/TestPackage')
+devtools::install_github('DrBuscaglia/F23DemoPackage')
 ```
 
-If you chose to share your package with others by sharing a `.tar.gz` file, then create the file using the `Build` tab and `More -> Build Source Package`. Then to install the package, the user will run the R command
+### Compressed File
+
+It is also possible to wrap up our packages in a simple compressed file. If you chose to share your package with others by sharing a `.tar.gz` file, then create the file using the `Build` tab within RStudio and choosing the option `More -> Build Source Package`. This will create a `.tar.gz` file within the R package project directory, that can then be shared with others via email or many traditional file exchange methods. 
+
+To install a package from "source", the user will run the R command
+
 ```{r, eval=FALSE}
-install.packages('TestPackage_0.0.0.1.tar.gz', repos=NULL, type='source')
+install.packages('F23DemoPackage_0.0.0.1.tar.gz', repos=NULL, type='source')
 ```
-
 
 ## An Example Package
-I find it is easiest to use RStudio to start a new package via `File -> New Project ...` and then start a project in a `new directory` and finally select that we want a new `R package`.
 
-Alternatively we could use the `usethis::create_package()` function to build the minimal package. 
+We have now covered all of the details of a package, but how do we actually create one? This section is created to walk you through the package creation process step-by-step. It is strongly encouraged that this section be run, line by line, by all users interested in this Chapter. By the end of this section, you will have built a very basic R package, which should give you the foundation for creating the package within the Exercises section at the end of the chapter.
+
+### Initialize the R-Package Project
+
+We can initialize the R package just like an R project, discussed in earlier chapters. Start a new package via `File -> New Project ...` and then start a project in a `new directory` and finally select that you are creating a new `R package`. Alternatively we could use the `usethis::create_package()` function to build the minimal package, although it can be preferable to control each step rather than using this command.
+
 ```{r, eval=FALSE}
 usethis::create_package('~/GitHub/TestPackage')  # replace the path to where you want it...
 ```
 
-Once the package is created:
+Once you have completed this initializing step, use your computer to navigate to the R project folder and review its directory. Notice the structure that has been initialized and how it matches the discussion above. You should see many file directories that were mandatory, and many other directories that were discussed not available yet. The most important item to recognize is that there is a new R project file, with the exact name of your R package. When working on an R package, you should always ensure you are working with the corresponding R project file!
 
-1. Put any `.csv` or `.xls` data files you have in `data-raw/` sub-directory.  For this example, save the file [https://raw.githubusercontent.com/dereksonderegger/444/master/data-raw/FlagMaxTemp.csv](FlagMaxTemp.csv) from the STA 444/5 Github page. In the same `data-raw` directory, create a R script or Rmarkdown file that reads the data in, cleans it up by renaming columns, or whatever.  An example R script might look something like this:
-    ```{r, eval=FALSE, highlight=FALSE}
-    library(tidyverse)
-    
-    # Read in the data.  Do some cleaning/verification
-    MaxTemp <- read.csv('data-raw/FlagMaxTemp.csv') %>%
-      gather('DOM', 'MaxTemp', X1:X31) %>%            
-      drop_na() %>%
-      mutate(DOM  = str_remove(DOM, fixed('X')) ) %>%  
-      mutate(Date = lubridate::ymd( paste( Year, Month, DOM )) ) %>%
-      select(Date, MaxTemp)
-    
-    # Save the data frame to the data/ directory as MaxTemp.rda
-    usethis::use_data(MaxTemp)
-    ```
+### Download and Clean Data
 
-2. In the `R/` directory, create file `MaxTemp.R` and when the package is built, this will document the dataset.
-    ```{r, eval=FALSE, highlight=FALSE}
-    #' A time series of daily maximum temperatures in Flagstaff, AZ. 
-    #' 
-    #' @format a data frame with 10882 observations 
-    #' \describe{
-    #'   \item{Date}{The date of observation as a POSIX date format.}
-    #'   \item{MaxTemp}{Daily maximum temperature in degrees Farhenheit.}
-    #' }
-    #' @source \url{www.ncdc.noaa.gov}
-    "MaxTemp"
-    ```
+Now that we have a package started, lets start by creating a data set with documentation. We should create a new directory (if you have not yet) called `data-raw` that can store any raw data files you are working with. This would be files you have received that are often of the `.csv` or `.xls` data type. For the example package, download the "FlagMaxTemp.csv" file located [here](https://github.com/BuscagliaR/STA_444_v2/blob/main/data-raw/FlagMaxTemp.csv). Store this file in the `data-raw` directory of your example package.
 
-3. Build the package by going to `Build` tab.
-    a) Create the Documentation.
-        i) The first time, you'll need to enable `Oxygen` style documentation. Do this by clicking `Build` tab, then click `More` -> `Configure Build Tools`. Finally select the tick-box to build documentation using `ROxygen`.
-        ii) Click the `More` and select `Document` to create the data frame documentation. The shortcut is `Ctrl/Cmd Shift D`.
-    b) Install the package.
-        i) Click the `Install and Restart` to build the package. The shortcut is `Ctrl/Cmd Shift B`.
+Next, in the same `data-raw` directory, create a R script file that reads the data in and cleans it. Because we need to be careful with naming our data for proper documentation, name the script file `MaxTemp.R`. You may use the code provided below, paste the code below into your R script file.
 
-4. Create the `docs/` directory and then create a RMarkdown file that does some analysis.
-    ```{r, eval=FALSE, highlight=FALSE}
-    ---
-    title: "My Awesome Analysis"
-    author: "Derek Sonderegger"
-    date: "9/18/2019"
-    output: html_document
-    ---
-    
-    This Rmarkdown file will do the analysis.
-    
-    ```{r, eval=FALSE}
-    library(TestPackage)   # load TestPackage, which includes MaxTemp data frame.
-    library(ggplot2)
-    
-    ggplot(MaxTemp, aex(x=Date, y=MaxTemp)) +
-      geom_line()
-    ```
-    
-    We see that the daily max temperature in Flagstaff varies quite a lot.
-    ```
-    ```{r, echo=FALSE, eval=FALSE}
-    # If you are looking at the raw source code for this section, you might be shocked
-    # by the  character in the above. Because I want to show something completely 
-    # verbatim, and I don't want to actually invoke R, I needed to short-circuit
-    # the code chunk step.  So what I did was inserted a character with zero width.
-    # So there is a character there, but it doesn't get displayed.
-    ```
-    
+```{r, eval=FALSE, highlight=FALSE}
+library(tidyverse)
+
+# Read in the data.  Do some cleaning/verification
+MaxTemp <- read.csv('data-raw/FlagMaxTemp.csv') %>%
+  gather('DOM', 'MaxTemp', X1:X31) %>%            
+  drop_na() %>%
+  mutate(DOM  = str_remove(DOM, fixed('X')) ) %>%  
+  mutate(Date = lubridate::ymd( paste( Year, Month, DOM )) ) %>%
+  select(Date, MaxTemp)
+
+# Save the data frame to the data/ directory as MaxTemp.rda
+usethis::use_data(MaxTemp)
+```
+
+When you run this R script the data will be loaded, cleaned, and exported to the RData file named "MaxTemp". This is a good first step, and the data should now be available in a directory called `data` that has appeared in your project (this file will be made automatically be the `use_data()` command, if it did not already exist).
+
+### Documenting Data
+
+With our data cleaned and in the proper `.RData` format, we next need to document the data set and properly link this documentation to the data. In the `R/` directory, create another R script named `MaxTemp.R`. The script will properly document the data set when we compile (build) the R package. Within the new R script, copy the following documentation syntax
+
+```{r, eval=FALSE, highlight=FALSE}
+#' A time series of daily maximum temperatures in Flagstaff, AZ. 
+#' 
+#' @format a data frame with 10882 observations 
+#' \describe{
+#'   \item{Date}{The date of observation as a POSIX date format.}
+#'   \item{MaxTemp}{Daily maximum temperature in degrees Farhenheit.}
+#' }
+#' @source \url{www.ncdc.noaa.gov}
+"MaxTemp"
+```
+
+Notice, as discussed in the above sections, that the documentation ends by giving the exact name of the exported data. Since we exported the data in the step above with the name `MaxTemp`, we ended the documentation script with the exact same name `MaxTemp`. This is the only way R knows how to link the documentation to its proper data set. Ensure your names match, and you now you have a documented data set ready to compile!
+
+### Build the Package
+
+We now have an R package, with a simple documented data set, ready to be compiled. Build the package by going to `Build` tab within the RStudio environment (default Upper Right Corner). Before we build the package, lets make sure everything is properly setup for documentation. To do this, we want to create the documentation for the package before we compile.
+
+  i) The first time you build documentation, you will need to enable `Oxygen` style documentation. Do this by clicking `Build` tab, then click `More -> Configure Build Tools`. Finally select the tick-box to build documentation using `ROxygen`. This needs to be done only once!
+  
+With `roxygen` properly setup, we can next run the documentation.
+
+  ii) Click the `More` icon and select `Document` to create the data frame documentation. The shortcut is `Ctrl/Cmd Shift D`.
+  
+We are finally ready to finalize the package. To install the package:
+
+  iii) Click the `Install and Restart` to build the package. The shortcut is `Ctrl/Cmd Shift B`.
+  
+Your package should now be fully functional and appear like any other package in your R software. Try typing in the name of the package and it should appear, along with any of its dependencies (i.e. the data that was made available above).
+
+### Add Additional Files
+
+We now have a working package, but maybe you want to add more. Specifically, maybe we want to add an Rmarkdown file that does some analysis with the "MaxTemp" data we have created. Lets create a new directory called `docs/` within our R project directory. Within the `docs/` directory, create a new RMarkdown file. Use the code below to produce an analysis of the "MaxTemp" data, exported as an html document when compiled. The code is setup exactly like an RMD file you have worked with during this book.
+
+```{r, eval=FALSE, highlight=FALSE}
+---
+title: "My Awesome Analysis"
+author: "Your Name Here"
+date: "Today"
+output: html_document
+---
+
+This Rmarkdown file will make a graph of the MaxTemp data. The code below is 
+tabbed so that it properly knits to the webpage. Make sure you remove the eval=FALSE!!
+
+  ```{r, eval=FALSE}
+  library(TestPackage)   # load TestPackage, which includes MaxTemp data frame.
+  library(ggplot2)
+  
+  ggplot(MaxTemp, aex(x=Date, y=MaxTemp)) +
+    geom_line()
+  ```
+  
+We see that the daily max temperature in Flagstaff varies quite a lot.
+```
+
+You should now have a HTML page within your `\docs` folder that when viewed, should show the RMD output above. Congratulations on making your first R package!
 
 ## Exercises  {#Exercises_Packages}
 
-1. Build a package that contains a dataset that gives weather information at Flagstaff's Pulliam Airport from 1950 to 2019. I have the data and metadata on my [GitHub](https://github.com/dereksonderegger/444) site and I downloaded the data on 9-19-19 from https://www.ncdc.noaa.gov/cdo-web/search. In the `data-raw` directory, there are files `Pulliam_Airport_Weather_Station.csv` and its associated metadata `Pulliam_Airport_Weather_Station_Metadata.txt`. In the data, there are a bunch of columns that contain attribute information about the preceding column, I don't think those are helpful, or at least the metadata didn't explain how to interpret them. So remove those. Many of the later columns have values that are exclusively ones or zeros.  I believe those indicate if the weather phenomena was present that day. Presumably a `1` is a yes, but I don't know that. When I downloaded the data, I asked for "standard" units, so precipitation and snow amounts should be in inches, and temperature should be in Fahrenheit. For this package, we only care about a couple of variables, `DATE`, `PRCP`, `SNOW`, `TMAX`, and `TMIN`.
-    a) Create a new package named `YourNameFlagWeather`. In the package, use `usethis::use_data_raw()` function to create the `data-raw/` directory. Place the data and metadata there.
-    b) Also in the `data-raw` directory, create an R-script that reads in the data and does any necessary cleaning. Call your resulting data frame `Flagstaff_Weather` and save a `.rda` file to the `data/` directory using the command `usethis::use_data(Flagstaff_Weather)`. For this package, we only care about a couple of variables, `DATE`, `PRCP`, `SNOW`, `TMAX`, and `TMIN`. Keep and document only these variables.
-    c) In the `R/` directory, create a file `Flagstaff_Weather.R` that documents where the data came from and what each of the columns mean.
-    d) Set RStudio to build documentation using Roxygen by clicking the `Build` tab, then `More -> Configure Build Tools` and click the box for generating documentation with Roxygen. Select `OK` and then build the appropriate documentation file by clicking the `Build` tab, then `More -> Document`.
-    e) Load your package and restart your session of R, again using the `Build tab`.
-    f) Create a new directory in your package called `docs/`. In that directory create a RMarkdown file that loads your package and uses the weather data to make a few graphs of weather phenomena over time.
-    g) Suppose that we decided to change something in the data and we need to rebuild the package. 
-        i) Changing the name of one of the columns in your cleaning script.  
-        ii) Re-run the cleaning script and the `usethis::use_data` command. 
-        iii) Re-install the package using the `Build` tab and `Install and Restart`.
-        iv) Verify that the `Flagstaff_Weather` object has changed.
-        v) Verify that the documentation hasn't changed yet.
-        vi) Update the documentation file for the dataset and re-run the documentation routine.
-        vii) Re-install the package and check that the documentation is now correct.
+**All exercises in this Chapter should be compiled into an R package.** The package should follow the following naming convention: `YourLastName445Package`. When completed, the package will be uploaded to your GitHub page under the repository with the same name as the package. To receive credit for these exercises, a URL to the package must be submitted. The package must download and install. **It is strongly encouraged to have a peer install the package from GitHub to ensure it is working prior to submission for this assignment.**
 
-2. Recall writing the function `FizzBuzz` in the chapter on functions. We will add this function to our package and include both documentation and unit tests.
-    a) Copy your previously submitted `FizzBuzz` function into an R file in `R/FizzBuzz.R`. 
-    b) Document what the function does, what its arguments are, and what its result should be.
-    c) Force your package to use unit testing by running the `usethis::use_testthat()`.
-    d) Add unit tests for testing that the length of the output is the same as the input `n`.
-    e) Add unit tests that address what should happen if the user inputs a negative, zero, or infinite value for `n`.
-    f) Modify your function so that if the user inputs a negative, zero, or infinite value for `n`, that the function throws and error using the command `stop('Error Message')`. Modify the error message appropriately for the input `n`. *Hint: there is a family of functions `is.XXX()` which test a variety of conditions. In particular there is a `is.infinite()` function.*
-    g) Update your unit tests and make sure that the unit tests all pass.
+### Exercise 1 {-}
 
-3. Now save the package as one file by building a source package using the `Build` tab, `More -> Build Source Package`. This will create a `.tar.gz` file that you can easily upload to Bblearn. 
+Initiate an R package called `YourLastName445Package`. Take this time as a moment to review all steps and be prepared to add data and functions to the package. You will want to work within the package R project directory for the remaining exercises.
+
+### Exercise 2 {-}
+
+Store and annotate (document) Flagstaff's Pulliam Airport data. The data sets needed are available [here](https://github.com/BuscagliaR/STA_444_v2/tree/main/data-raw) through the textbook's GitHub page. The data contains weather information for Flagstaff from 1950 to 2019. There are two files you will want to download and place into a `data-raw` directory within your R package. The first is `Pulliam_Airport_Weather_Station.csv` which contains the weather information. You will also want to download and store `Pulliam_Airport_Weather_Station_Metadata.txt` which documents many of the variables along with other information you may need while cleaning the data. For the data set developed for your package, you will be interested in the variables `DATE`, `PRCP`, `SNOW`, `TMAX`, and `TMIN`.
+
+The data was originally downloaded from "https://www.ncdc.noaa.gov" which should be included as the source when preparing documentation.
+
+**a)** Download the data sets above and store them within your packages `data-raw` directory.
+
+**b)** Also in the `data-raw` directory, create an R-script that reads in the data and does all necessary cleaning. You should ensure all variables of interest (`DATE`, `PRCP`, `SNOW`, `TMAX`) are clean and of the correct data type. Save the cleaned data as a data frame named `Flagstaff_Weather`. When finished cleaning, store the cleaned data frame `Flagstaff_Weather` as a `.rda` file to the `data` directory of your package. You should include at the end of your cleaning script the command `usethis::use_data(Flagstaff_Weather)`, which will properly address storing the data as RData.
+
+**c)** In the `R/` directory, create a file `Flagstaff_Weather.R` that documents where the data came from and what each of the columns mean.
+
+**d)** Ensure RStudio is set to build documentation using Roxygen by clicking the `Build` tab, then `More -> Configure Build Tools` and click the box for generating documentation with Roxygen. Select `OK` and then build the appropriate documentation file by clicking the `Build` tab, then `More -> Document`.
+
+**e)** Load your package and restart your session of R, again using the `Build tab`.
+
+**f)** Create a new directory in your package called `docs/`, if it does not yet exist. In that directory create a RMarkdown file that loads your package and uses the weather data to make a simple graph of weather phenomena over time.
+
+**g)** Rebuild the data set `Flagstaff_Weather` within your R package by changing the dates available in the RData file to include only 2015 - 2019. Here are some helpful hints:
+
+  i) Include in your cleaning script a new line that filters the years down to the desired range.
+  ii) Re-run the cleaning script, including re-running the `usethis::use_data` command. 
+  iii) Re-install the package using the `Build` tab and `Install and Restart`.
+  iv) Verify that the `Flagstaff_Weather` object has changed BUT the documentation has not changed.
+  v) Update the documentation file for the data set and re-run the documentation routine.
+  vi) Re-install the package and check that the documentation is now correct.
+
+### Exercise 3 {-}
+
+Recall writing the function `FizzBuzz` in the chapter on functions. We will add this function to our package and include both documentation and unit tests. The function MUST following the naming convention `FizzBuzz` for grading purposes. When complete, this exercise should result in a function within your package that can be called using `YourLastName445Package::FizzBuzz()`.
+
+**a)** Copy your previously submitted `FizzBuzz` function into an R file in `R/FizzBuzz.R`. You should ensure the function accepts an integer value and returns a vector output of the FizzBuzz game.
+
+**b)** Add documentation of what the function does, what its arguments are, and what its result should be.
+
+**c)** If not yet done, enable unit testing within your package by running the command `usethis::use_testthat()`.
+
+**d)** Add unit tests for testing that the length of the output is the same as the input `n`.
+
+**e)** Modify your function so that if the user inputs a negative, zero, or infinite value for `n`, that the function throws and error using the command `stop('Error Message')`. Modify the error message appropriately for the input `n`. *Hint: there is a family of functions `is.XXX()` which test a variety of conditions. In particular there is a `is.infinite()` function. You will want to add these "error checks" at the beginning of the function.*
+
+**f)** Add unit tests that address the errors are properly caught if the user inputs a negative, zero, or infinite value for `n`.
+
+**g)** Be sure to compile and reload the package as needed when making changes. At the end of this problem, you should have a fully functional `FizzBuzz` command, with error checking. When you compile the R package, unit tests should run ensuring this function is operating properly.
+
+### Exercise 4 {-}
+
+Store your package on your personal GitHub within the repository `YourLastName445Package`. This can be done by copying all files from your computer's R package project file directly to the GitHub repository. Ensure the package is functional by having a peer install and use your package. This should include: 1) proper installation from GitHub, 2) Documented and loadable `Flagstaff_Weather`, 3) Documentation of FizzBuzz, 4) a fully functional `FizzBuzz()` command!
+
+Please submit an PDF file generated from RMD that includes.
+
+**a)** A link to your downloadable package from GitHub.
+
+**b)** Proper loading of your package (locally). 
+
+**c)** A graph of the `Flagstaff_Weather` data.
+
+**d)** FizzBuzz output for $n = 15$ and $n = -15$.
+
+<!-- **Note.** If you are having trouble with GitHub, you may want to save the package as one file by building a source package using the `Build` tab, `More -> Build Source Package`. This will create a `.tar.gz` file that you can easily be uploaded.  -->

@@ -267,5 +267,5 @@ Create a new data frame, joining together your two data tables, and use this new
 
 ### Exercise 3 {-}
 
-One of my favorite blogs is known as [Towards Data Science](https://towardsdatascience.com/). From the Towards Data Science homepage, extract the most recent threads. Be sure you only get the threads, and not anything under the "About" and "Latest" sections - only the headlines at the top! *Hint.* You will need to use the SelectorGadget to get the correct elements, following the steps shown above for extracting a "list". Show all recent threads `rvest` is capable of extracting (do not truncate to the head). You are not required to clean up the thread headlines in any way, in case some strange headline output is obtained.
+One of my favorite blogs is known as [Towards Data Science](https://towardsdatascience.com/). From the Towards Data Science homepage, extract the most recent threads. Be sure you only get as many threads as possible above the section labeled "About". *Hint.* You will need to use the SelectorGadget to get the correct elements, following the steps shown above for extracting a "list". Show all recent threads `rvest` is capable of extracting (do not truncate to the head). You are not required to clean up the thread headlines in any way, in case some strange headline output is obtained.
 
